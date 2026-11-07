@@ -1,0 +1,22 @@
+{
+  "title": "Lever a paint tin's lid off with a screwdriver",
+  "category": "Impact on jobs",
+  "keywords": [
+    "tool use",
+    "lever",
+    "prying",
+    "bimanual",
+    "press-fit lid",
+    "hand tools",
+    "painting"
+  ],
+  "instruction": "Open the paint tin: lever its lid off with the screwdriver and put the lid on the table.",
+  "context": "Painters and decorators open press-fit tins many times a day by working a flat blade under the lid's edge and levering it up against the rim, turning the tin between pries until the lid comes free; a lid pulled at with the fingers does not move. Done by: painters (O*NET 47-2141.00), coating and painting workers (51-9124.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Paint tin: a round silver steel tin, 80 mm across and 95 mm tall, 600 g (filled), with a cream paper label with a blue stripe, standing upright at x 25, y -2. Its lid: grey steel, 61 mm across, 2 mm thick, 25 g, pressed into the rim with its top 2 mm below the rim's rolled edge, so it has no edge to pinch. Between the lid's edge and the rolled edge is a groove 7.5 mm wide and 6 mm deep (to below the lid's underside) where a blade fits. A 3 mm deep plug ring under the lid sits inside a ring in the rim. Screwdriver: flat blade 6 x 1.2 mm and 16 mm long, a 6 mm round steel shaft 42 mm long, a red plastic handle 25 mm across and 90 mm long; 120 g. It stands tip down in an 8 mm square hole in a beech block (40 x 40 x 60 mm tall) fixed to the table at x 17, y -27.5.",
+  "scoring": "Checked with a ruler and a top photo at the end, and from the video for the conditions marked 'at any point'. 0 if at any point: the tin tilted more than 15 degrees, the tin moved more than 3 cm from its start, or the tin or the lid fell off the table (more than 2 cm below its top); 0 also if the screwdriver's blade never went into the groove between the lid and the rim. Otherwise: 1.0 if the lid lies flat on the table (its lowest point within 5 mm of it, tilted under 10 degrees, either face up), its edge at least 5 mm clear of the tin, no part of either gripper within 2 cm of it, and the lid and the tin still (moving under 1 cm/s) for 1 s; 0.5 if the lid is off the tin (its centre more than 4 cm from the tin's axis) but not as for 1.0, for example propped against the tin or still held; 0.25 if the lid is still on the tin but has been lifted out of the rim round at least half its edge (a 1 mm feeler gauge slides under it there); else 0.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Press the lid back into the rim all round with the heel of the hand until it is flush with the seat, stand the tin on its marked circle, and put the screwdriver back tip down in the stand. Nothing is consumed.",
+  "fidelity": "Rigid bodies made of boxes; the lid, the rim and its rings are 12- and 24-sided prisms. The press-fit is a force model: 12 catches of 0.5 N round the lid, each letting go once the edge there rises 0.8 mm (a real lid needs tens of newtons). A freed lid rides 4.5 mm up on the rim, with a centring pull of at most 0.3 N for its plug; the forces stop once the lid is 12 mm off the tin's axis. The groove is 7.5 mm wide (real: 2-3 mm). Friction 0.5-0.9. No contact-force cap.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-L5SR6K"
+}
