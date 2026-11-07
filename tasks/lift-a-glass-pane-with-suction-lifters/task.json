@@ -1,0 +1,22 @@
+{
+  "title": "Take a glass pane out of a sash with two suction lifters and lay it on bearers",
+  "category": "Impact on jobs",
+  "keywords": [
+    "glazing",
+    "suction lifter",
+    "tool use",
+    "bimanual",
+    "glass",
+    "carrying",
+    "construction"
+  ],
+  "instruction": "Take the glass pane out of the window sash with the two suction lifters, lay it flat on the two felt bearers, then unlock the lifters.",
+  "context": "Glaziers, tile setters and worktop fitters lift glass and stone with hand suction lifters every day: a pane lying flush in a frame has no edge to take hold of, and glass edges cut. Done by: glaziers (O*NET 47-2121.00), tile and stone setters (47-2044.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Window sash: a white-painted pine frame lying flat, 46.4 cm wide (y), 26.4 cm deep (x), 4 cm tall, centred at x 39, y 0, fixed to the table; its rebate (40.4 x 20.4 cm) has a green felt bed 3.5 cm up. Glass pane: float glass 40 x 20 cm, 4 mm thick, 0.8 kg, lying on the felt in the rebate, its top 1 mm below the frame's top, with a 2 mm gap all round. Suction lifters (2): single-cup lever lifters, a black rubber cup 11.5 cm across, an aluminium handle bar 11 x 2.2 x 2.2 cm across its back (centre 5.1 cm above the cup's face) and a red lever 6.4 cm long beside the handle (flat: locked; standing up 60 degrees: unlocked); 0.31 kg each. They lie face down with their levers up and handles along x, at x 30, y 31 and x 30, y -31, levers pointing outwards. Bearers (2): pine battens 4 x 36 x 5 cm tall with a felt top, fixed, running along y, centred at x 11 and x 23, y 0.",
+  "scoring": "Judged from the video, and at the end with a ruler and by the levers. 0 if at any point the pane dropped (fell faster than 0.3 m/s, or lower than its felt bed), tilted more than 20 degrees once off the sash, or was touched by a gripper. Otherwise: 1.0 if, after a lift 1 cm clear of the sash made with both lifters locked on it, the pane lies flat on both bearers (tilted under 3 degrees, underside within 3 mm of their tops, centre within 2 cm of the point midway between them), both levers are up (45 degrees or more: unlocked), no part of either gripper is within 2 cm of the glass or 1 cm of a lifter, and all is still (under 1 cm/s) for 1 s; 0.5 if the pane was lifted 1 cm clear of the sash with both lifters locked on it, but not as for 1.0; 0.25 if a lifter was locked on the pane at some point; else 0.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Unlock and remove both lifters, lay the pane back on the felt in the sash's rebate, and set the lifters face down at their marks with their levers up. Nothing is consumed. Real trials should use toughened (safety) glass with arrised edges.",
+  "fidelity": "Rigid bodies made of boxes; the cups are 12-sided prisms. Each lever turns on a PhysX revolute joint with an over-centre spring: it snaps shut below 25 degrees and open above. The suction is a force model: turned down with the cup flat (under 3 degrees) and its rim 5 mm inside the glass's edges, three stiff springs tie the cup to the glass, and it pops off beyond 40 N per spring (real cups hold 30 kg). The glass does not flex or break. Friction 0.5-0.9.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-KRCGQB"
+}
