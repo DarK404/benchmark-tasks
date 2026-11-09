@@ -1,0 +1,23 @@
+{
+  "title": "Bend a steel bar into a rectangular stirrup on a bending table",
+  "category": "Impact on jobs",
+  "keywords": [
+    "bending",
+    "rebar",
+    "stirrup",
+    "metalwork",
+    "bimanual",
+    "hand tools",
+    "sequencing",
+    "deformable"
+  ],
+  "instruction": "Bend the steel bar into a stirrup 80 x 50 mm inside: at each chalk mark, swing the lever to make a right-angle bend, all the same way, and feed the bar along between bends so the ends meet.",
+  "context": "Reinforcing iron workers bend stirrups, the rectangular hoops that hold a beam's main bars, by hand on a bending table: each bend at its mark, the same way and by the right amount allowing for springback, or the hoop does not close and the bar is scrap. Done by: reinforcing iron and rebar workers (O*NET 47-2171.00), metal fabricators (51-2041.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Bending table: a steel plate 16 x 29 cm, 1.5 cm thick, fixed to the table from x 25 to 41 and y -16 to 13. On it, 2.2 cm high: a 16 mm steel bending pin at x 28, y -6, and three 10 mm steel guide pins at (26.2, -4.8), (27.6, -3.6) and (26.2, -3.0); two steel strips 3 mm wide, 0.8 mm high, run from y 0 to 11 either side of x 26.9. Lever: a red flat steel bar (17 x 1.6 x 0.6 cm, 0.2 kg) pivoting on the bending pin 2.8 cm above the plate, a steel roller (12 mm) under it near the pivot at (25.9, -8.5), a black plastic handle (20 mm round, 4.5 cm tall) at its end, at (18.4, -17.5). Bar: straight 3 mm bright mild steel, 25.5 cm long, 14 g, lying on the plate along y at x 26.9 between the pins, its free end at y -14.8; three white chalk marks 88, 138 and 217 mm from its free end.",
+  "scoring": "Measured on the bar at the end, laid on the drawing, with a protractor and ruler; a corner is a bend of 20 degrees or more, its angle read between the sides it joins, and the sides' lengths measured inside the corners. 0 if at any point the bar was bent both ways (bends of 30 degrees or more each way). Otherwise: 1.0 if the bar has exactly three corners, each 90 +-5 degrees and all the same way; the two sides between them 50 and 80 mm (+-5 mm, either order); each end within 5 mm of the line of the side at the other end (the hoop closed); every side straight (no point 3 mm off its line); the bar flat (within a 5 mm height band); no part of either gripper within 1 cm of the bar, and the bar still (under 1 cm/s) for 1 s; 0.5 if it has three corners at 90 +-5 degrees but misses another condition for 1.0; 0.25 if it has at least one corner at 90 +-5 degrees; else 0.",
+  "run_limit": "1,600 steps (80 seconds at 20 Hz)",
+  "reset_notes": "The bar is consumed: lay a fresh straight bar with its chalk marks in the channel, its free end 88 mm past the bending pin, and swing the lever back to its start with the handle towards the robot's right.",
+  "fidelity": "The bar is 51 rigid 5 mm links (3 mm square) on joints whose springs give 3 mm steel's stiffness; a joint yields for good past 0.8 N m. The bend is a model: as the lever turns, the bar wraps the pin from where it touches it (0.8 N m on the lever, 3 degrees springback); the roller is only seen. The bar bends only in the table's plane and does not collide with itself. Friction 0.02 between bar and plate. About 1:3 scale to site rebar.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-A9VZFQ"
+}
