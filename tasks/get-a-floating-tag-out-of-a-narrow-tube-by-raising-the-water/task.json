@@ -1,0 +1,22 @@
+{
+  "title": "Get a floating tag out of a narrow tube by raising the water",
+  "category": "Other",
+  "keywords": [
+    "physical reasoning",
+    "water displacement",
+    "causal understanding",
+    "Aesop's fable",
+    "animal cognition",
+    "planning",
+    "bimanual"
+  ],
+  "instruction": "Take the floating tag out of the tube and put it in the tray.",
+  "context": "The Aesop's fable test of causal understanding of water displacement: crows and rooks drop stones into a tube to raise floating food, and children solve it from about 5 to 7 years. It measures physical problem solving that no instruction spells out: the tag is out of reach until the water is raised, only the sinking slugs raise it, and the robot must work out how.",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Tube: clear acrylic, 40 mm bore, 48 mm outside, 13.5 cm deep inside, its rim 14 cm above the table, on an 8 x 8 cm steel base plate 5 mm thick fixed to the table at x 20, y 0; a thin rib runs up its far wall. Water in it 7.1 cm deep. Float: a cork ring 39 mm outside, 30 mm hole, 12 mm thick, 4 g, notched over the rib, with a red plastic tag 25 x 12 x 3 mm standing on its near side; the tag's top is 33 mm below the rim. Rack: wood, 4 cm wide, at x 18 from y 10 to 44, 15 mm high, with pockets 8 mm deep; in it six round slugs 27 mm across and 35 mm long, standing upright at y 12, 18, 24, 30, 36 and 42: aluminium (51 g) at 12, 24, 30 and 42, cork (4.6 g) at 18 and 36. Tray: grey plastic, 12 x 8 cm with 15 mm walls, at x 20, y -15.",
+  "scoring": "Judged from the video, with the tube's rim as the mark. 1.0 if the float (with its tag) ends resting in the tray, with no part of either gripper within 1 cm of it and still (under 1 cm/s) for 1 s; 0.5 if the float was taken wholly out of the tube at some point but does not end in the tray; 0.25 if the tag's top was raised above the rim at some point; else 0.",
+  "run_limit": "1,600 steps (80 seconds at 20 Hz)",
+  "reset_notes": "Tip the water out, dry the slugs and stand them back in the rack in the same order, put the float back in the tube with its notch on the rib, and fill the tube to the 71 mm line marked on it.",
+  "fidelity": "No fluid in PhysX: our water model sets the level from the volume under the surface every substep and pushes each body in the tube up by the water it displaces, damped while under; no splashing or flow. Bodies are boxes (round parts 12- to 24-sided); the tube and water are drawn as glass. Aluminium slugs 51 g, cork 4.6 g, float 4 g; friction 0.2 to 0.6. The float is guided by a rib so its tag faces the robot.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-GF2A9H"
+}
