@@ -1,0 +1,24 @@
+{
+  "title": "Pull a stuck pin with a slide hammer: hook it into the eye, steady the shaft, sling the weight against the stop",
+  "category": "Impact on jobs",
+  "keywords": [
+    "slide hammer",
+    "puller",
+    "impact",
+    "momentum",
+    "stuck pin",
+    "extraction",
+    "hand tools",
+    "bimanual",
+    "mechanics"
+  ],
+  "instruction": "Pull the stuck pin out of the block with the slide hammer, then put the slide hammer back on its rack.",
+  "context": "A slide hammer pulls what a steady pull cannot move: stuck pins, axles, bearing races, seals. It hooks onto the part; one hand keeps its shaft steady and in line while the other slings its sliding weight against the end stop, and each blow gives a peak force far beyond a steady pull, so the part comes out a few millimetres at a time. Done by: automotive service technicians and mechanics (O*NET 49-3023.00), industrial machinery mechanics (49-9041.00), mobile heavy equipment mechanics (49-3042.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Work, fixed: a blued-steel block (6 x 6 x 6.4 cm) at x 30, y -9.75, with a 10 mm bore in its +y face; stuck in it, a 10 mm steel eye pin (5.5 cm shank, 4 cm in the bore) whose flat eye (25 mm hole, 45 mm across, 6 mm thick) lies with its middle at x 30, y -3, 3.1 cm up. A wooden cradle for the handle end at x 30, y 42.7. Tool: a slide hammer (0.55 kg, 47 cm: a 14 mm steel shaft, a hook with an 8 mm peg at its front end, a steel collar, a 0.3 kg red weight of square section with steel ends sliding 16 cm between the collar and the end stop, a black handle), lying along y on a wooden rack at x 20 (cradles at y 6.5 and 42.7), its hook at y -3.",
+  "scoring": "Measured at the end by looking at the block's bore and the rack. 1.0 if the pin is out of its bore (pulled out 4 cm) and the slide hammer lies back on its rack in both cradles (within 8 mm across them, anywhere along them within 25 mm, level within 5 degrees), with no part of either gripper within 1 cm of it or its weight, still (under 1 cm/s) for 1 s; 0.5 if the pin is out but the slide hammer is not back; 0.25 if the pin has come out 5 mm or more but is still in its bore; else 0.",
+  "run_limit": "2,000 steps (100 seconds at 20 Hz)",
+  "reset_notes": "Push the pin back into its bore to its stop, and lay the slide hammer on its rack with its weight forward.",
+  "fidelity": "PhysX cannot hold a fit that gives only to blows: our model. The eye's collider is heavy and held in place (the hook's peg bears on it); a steady pull never moves the pin. The weight slides on a PhysX slider; striking the end stop at v (relative to the shaft), hook in the eye, pulls the pin 11 mm per m/s above 0.25 m/s; striking the collar drives it back. Out 4 cm, it hangs on the hook. Masses scaled (0.55 kg tool). Boxes; friction 1.0.",
+  "scores": "Dream-1 run: 0.0 (the left hand reaches over the slide hammer on its rack and closes on it by the weight, the right reaches towards the block's eye; the slide hammer never leaves its rack and the pin does not move); demo: 1.0 (success at step 964)",
+  "media": "M-G59YKR"
+}
