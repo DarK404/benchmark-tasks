@@ -1,0 +1,23 @@
+{
+  "title": "Wrap a pipe thread with thread-seal tape from a dispenser, the way the fitting turns on",
+  "category": "Impact on jobs",
+  "keywords": [
+    "plumbing",
+    "pipefitting",
+    "thread-seal tape",
+    "PTFE",
+    "tape dispenser",
+    "winding",
+    "bimanual",
+    "trade standard"
+  ],
+  "instruction": "Wrap the pipe's thread with thread-seal tape, ready for the fitting to be screwed on, then put the dispenser back on its mat.",
+  "context": "Every taper-threaded pipe joint is sealed this way before a fitting goes on: the tape is wound the way the fitting will turn on (clockwise seen from the thread's end), three to six turns over the thread, leaving the first thread bare so no shreds get into the pipe, and its torn end pressed down. Wound the other way, the tape bunches and unwinds as the fitting is screwed on and the joint leaks. Done by: plumbers, pipefitters and steamfitters (O*NET 47-2152.00), maintenance workers (49-9071.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Pipe: a 3/4-inch galvanised steel nipple (26.4 mm across) standing upright in a black cast-iron floor flange (68 mm across, 8 mm thick, with a 37 mm hub) on a wooden block (9 x 9 x 2 cm), all fixed, at x 26, y 0; its top is 10 cm above the table and its male thread runs 18 mm down from the top (14 threads per inch). Tape: a handheld thread-seal tape dispenser (orange plastic, 60 g): a roll of white PTFE tape, 12 mm wide, 30 mm across, 20 g, turns on an upright spindle (braked, so the tape comes off under a light pull); an arm from the spindle's top runs 2.5 cm to a black handle 7 cm long and 16 mm square, 34 mm above the roll's middle, and a foot under the handle's end stands it level. It lies on a grey rubber mat (6 x 15 cm, 2 mm thick, fixed) at x 20, y -12, its spindle at x 20, y -7.5 and its handle running towards -y.",
+  "scoring": "Measured on the thread at the end: count the turns, look at the direction, and a ruler on the thread. 0 if the tape is wound anticlockwise (seen from the thread's end) or less than one turn is on the thread. 1.0 if it is wound clockwise 3 to 6 turns; covers every part of the thread from 1 mm above its shoulder to 4 mm below the pipe's end; no tape is within 1 mm of the end; it is torn off the roll with its tail pressed down on the wrap; the dispenser is back upright on its mat, with no part of either gripper within 1 cm of it, still (under 1 cm/s) for 1 s. 0.5 if the tape is wound and torn off as for 1.0 but the tail is left standing or the dispenser is not back on its mat or not released; 0.25 if it is wound clockwise at least one turn on the thread; else 0.",
+  "run_limit": "1,600 steps (80 seconds at 20 Hz)",
+  "reset_notes": "Unwind the tape from the thread (or cut it off and wipe the thread), and lay the dispenser back on its mat; a roll does about 100 trials.",
+  "fidelity": "PhysX has no tape: our model sticks its end where the roll touches the thread and winds it by the angle the roll travels round the pipe, laid at the roll's height. The tape needed beyond what the roll has let off (turning on its braked spindle) stretches it, pulling the roll's rim at 300 N/m; stretched 5 mm (1.5 N) it tears: a steady wrap pays out, a yank tears. A hand presses the tail down. No wrinkling. Box-built rigid bodies.",
+  "scores": "Dream-1 run: 0.0 (both arms draw back towards their bases and never reach the dispenser or the pipe); demo: 1.0 (success at step 609)",
+  "media": "M-4KYK3E"
+}
