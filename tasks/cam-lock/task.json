@@ -1,0 +1,23 @@
+{
+  "title": "Join a shelf to a cabinet side with cam locks: cams open to the edge, push the shelf on, turn them tight",
+  "category": "Impact on jobs",
+  "keywords": [
+    "flat-pack furniture",
+    "cam lock",
+    "minifix",
+    "screwdriver",
+    "assembly",
+    "bimanual",
+    "particleboard",
+    "fitting orientation"
+  ],
+  "instruction": "Join the shelf to the cabinet side with its two cam locks.",
+  "context": "Cam-and-bolt connectors hold most flat-pack furniture together: a bolt in one panel, a cam in a bore in the other's face. Each cam's opening must be turned to the edge (its arrow at the bolt) before the panels go together; turned half a round clockwise, it then draws the joint shut. Pushed onto a cam that is still closed, the bolt's head breaks the particleboard out round it, and the board is scrap. Done by: furniture assemblers and installers, cabinetmakers and bench carpenters (O*NET 51-7011.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed: a 16 mm white melamine particleboard cabinet side (32 x 12 cm) standing upright in a steel jig, its face at x 41, along y from -16 to 16; two M6 connecting bolts (10 mm heads) 25 mm out of its face at y -9 and 9, 8 mm up, and two 8 mm beech dowels 12 mm out at y -11.5 and 11.5. Loose: a 16 mm white melamine shelf (20 x 26 cm, 0.5 kg) lying flat at x 18 to 38, y -13 to 13, its edge 3 cm from the side's face; in its top face two 15 mm zinc cams, 3.4 cm in from that edge at y -9 and 9, their arrows pointing to -y (right) and +y (left), a quarter turn from the edge. Two PH2 x 100 screwdrivers (0.12 kg; red and yellow 28 mm handles) stand in wooden holders (4 x 4 x 3 cm, 9 mm hole) at x 24, y -20 and 20.",
+  "scoring": "Measured at the end by looking at the joint and the holders. 0 if at any point the shelf was pushed onto a cam still closed with more than 10 N (the particleboard round it breaks out). Otherwise: 1.0 if both cams are locked (turned at least 120 degrees clockwise past open with the bolt's head in them), the joint is shut at both bolts (gap at most 0.5 mm), both screwdrivers stand back in their holders, and no part of either gripper is within 1 cm of the shelf or the screwdrivers, all still (under 1 cm/s) for 1 s; 0.5 if the joint is locked and shut but a screwdriver is not back; 0.25 if both bolts' heads are in their cams but the joint is not locked and shut; else 0.",
+  "run_limit": "2,000 steps (100 seconds at 20 Hz)",
+  "reset_notes": "Turn the cams back half a round, pull the shelf off, turn the cams to the starting marks, lay the shelf at its mark and stand the screwdrivers in their holders. Replace a broken-out shelf.",
+  "fidelity": "PhysX has no bolts in holes or eccentric cams: our model. Square and in line (2.5 mm, 2.5 deg) the edge takes the drawn bolts; a cam open (within 30 deg) lets the head in, closed it stops the shelf 9 mm short and breaks out past 10 N. Turned clockwise with the head in, a cam draws the joint shut by 180 deg. A screwdriver tip within 2 mm of a cam turns it. Real sizes; the side cut to 12 cm tall so the hands clear it. Boxes; friction 0.4-1.0.",
+  "scores": "Dream-1 run: 0.0 (the hands go to the screwdrivers and over the shelf, the right taking its screwdriver up tilted, but no cam is turned and the shelf is not pushed on); demo: 1.0 (success at step 1,127)",
+  "media": "M-4L4JFG"
+}
