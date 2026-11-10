@@ -1,0 +1,22 @@
+{
+  "title": "Clamp up a glued panel with the clamps alternating below and above",
+  "category": "Impact on jobs",
+  "keywords": [
+    "woodworking",
+    "glue-up",
+    "bar clamp",
+    "clamping",
+    "joinery",
+    "bimanual",
+    "force control"
+  ],
+  "instruction": "Clamp up the glued panel: close every clamp snug so the joint closes, with the clamps alternating above and below so it stays flat.",
+  "context": "Edge-gluing boards into a panel is everyday work in cabinet and furniture shops, and a glue-up is judged by a standard every woodworker learns: the joint closed along its whole length, clamps on alternate faces so the pressure does not bow the panel, and pressure that is snug, not crushing, since an overtightened clamp squeezes the glue out and starves the joint. Done by: cabinetmakers and bench carpenters (O*NET 51-7011.00), furniture finishers (51-7021.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Panel: two red oak boards, each 16 x 5 x 1.2 cm (0.075 kg), lying flat with their long sides along y and edge to edge, the glue line between them 2 mm open (a cream glue stripe on board A's edge); the panel's middle at x 28, y 0, board A on the robot's side. Lower clamps: two small sliding bar clamps (steel bar 20 x 1.6 x 0.8 cm; red jaws 2.6 cm thick, 2.4 cm wide, standing 1.8 cm off the bar, with black pads), fixed to the table jaws up with their bars along x under the panel's ends, at y -5.5 and y 5.5, their middles at x 28; the boards lie on their bars. Each has its fixed jaw beyond the panel (its pad 0.5 mm from board B's edge) and its sliding jaw towards the robot, open 15 mm from board A's edge. Spare clamp: the same clamp (bar 0.35 kg, sliding jaw 0.15 kg, open as the others), loose, hanging jaws down with its bar along x on a wooden rack (two posts 1 x 3 cm, 6 cm tall, 6 cm apart, on a 9 x 5 cm base) at x 20, y 20.",
+  "scoring": "Measured at the end with a feeler gauge in the joint at both ends (2 cm in) and the middle, a straightedge across it, and the force pad on each clamp's sliding jaw. 0 if at any point any clamp squeezed harder than 6 N for 0.5 s (the glue is squeezed out and the joint starved). A clamp is snug if no hand is on its sliding jaw, both its pads bear on the panel's outer edges, and it squeezes them with 1 to 6 N. Otherwise: 1.0 if the joint is closed (at most 0.2 mm open, not ridden over) at both ends and the middle, the boards level (faces within 1 mm, tilted under 2 degrees), three clamps are snug and alternate below, above, below along the joint, and no part of either gripper is within 1 cm of the clamps or the panel, all still (under 1 cm/s) for 1 s; 0.5 if the joint is closed at both ends and the middle and the boards level with at least two clamps snug (or finished as for 1.0 but not released or not still); 0.25 if the joint is closed at one end at least, the boards level, with at least one clamp snug; else 0.",
+  "run_limit": "1,600 steps (80 seconds at 20 Hz)",
+  "reset_notes": "Open every clamp fully (sliding jaw 15 mm clear of the panel), lay the boards back on the lower clamps with a 2 mm spacer in the joint and remove it, and hang the spare clamp back on its rack. A dry clamp-up: no glue is used in real trials.",
+  "fidelity": "Our model: each sliding jaw runs on a prismatic joint, slides while gripped and is held by a clutch at the narrowest opening the hand held once let go. The pads squeeze the boards' edges through springs we compute (3,000 N/m, equal on both edges), not contacts. Pressure is scaled to the arms (snug 1-6 N); no glue, squeeze-out or cupping is simulated (the alternating pattern is scored directly). Lower bars fixed to the table. Box-built rigid bodies; friction 0.8 boards on bars.",
+  "scores": "Dream-1 run: 0.0 (both arms draw back towards their bases and never reach the clamps or the panel); demo: 1.0 (success at step 1,036)",
+  "media": "M-8MPXZM"
+}
