@@ -1,0 +1,22 @@
+{
+  "title": "File a steel block flat down to a scribed line",
+  "category": "Impact on jobs",
+  "keywords": [
+    "filing",
+    "hand tools",
+    "fitting",
+    "machining",
+    "material removal",
+    "bimanual",
+    "force control"
+  ],
+  "instruction": "File the top of the block down to the scribed line, keeping it flat, then put the file back on its rest.",
+  "context": "Filing a part flat to a scribed line is the first exercise of every fitting and machining apprenticeship and a daily job in fitting parts: the file cuts only on the push, both hands must press evenly or it rocks and rounds the work, and filed below the line the part is scrap. Done by: machinists (O*NET 51-4041.00), millwrights and maintenance fitters (49-9044.00, 49-9041.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Vise: a small machinist's vise (blue-grey cast iron, 75 mm steel jaws, its screw and T-bar handle towards the robot) on a black rubber mat, fixed to the table at x 24, y 0, its jaws along y. Block: a mild steel bar clamped in it, its top 60 mm long (along y) and 16 mm wide, 8.6 cm above the table; its faces above the jaws are coated with marking blue, with a line scribed round it 1 mm below the top. File: a 150 mm flat file (blade 20 x 5 mm, steel) with a round 80 mm beech handle (29 mm across) and a brass ferrule, 0.14 kg, lying along y on a wooden rest (two blocks 4 x 2 cm, 3 cm high, at x 17, y -18.5 and y -9.5), its blade's middle at x 17, y -14 and its handle towards the robot's right.",
+  "scoring": "Measured on the block at the end with a straightedge and feeler gauge against the scribed line. 0 if at any point any part of the top was filed more than 0.05 mm below the line (the part is spoilt). Otherwise: 1.0 if the top is everywhere at most 0.2 mm above the line and flat within 0.15 mm, and the file lies back on its rest, with no part of either gripper within 1 cm of it, still (under 1 cm/s) for 1 s; 0.5 if the top is everywhere at most 0.4 mm above the line (or finished as for 1.0 but the file is not back on its rest); 0.25 if at least 0.3 mm has been filed off everywhere; else 0.",
+  "run_limit": "1,600 steps (80 seconds at 20 Hz)",
+  "reset_notes": "The block is consumed: clamp a fresh bar with its top 1 mm above a freshly scribed line (or re-scribe a used bar 2 mm lower and reclamp it higher), and lay the file back on its rest.",
+  "fidelity": "PhysX cannot cut: our model pushes the file up with springs we compute where its blade lies below the block's top (so the drawn file can sink about 1 mm into it) and lowers each of four sections of the top in proportion to pressure times distance slid on push strokes (Archard's law); return strokes cut nothing. No chips, burrs or heat; the file does not wear. Rigid bodies built from boxes; friction 0.5 file on steel, 0.6 elsewhere.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-KKPRZR"
+}
