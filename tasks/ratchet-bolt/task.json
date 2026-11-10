@@ -1,0 +1,23 @@
+{
+  "title": "Undo a tight bolt with a ratchet that is set to tighten: check its direction lever, flip it, then swing it",
+  "category": "Impact on jobs",
+  "keywords": [
+    "ratchet",
+    "socket wrench",
+    "direction lever",
+    "tool setting",
+    "loosening a bolt",
+    "hand tools",
+    "automotive maintenance",
+    "overtightening"
+  ],
+  "instruction": "Undo the bolt with the ratchet, then put the ratchet back in its tray.",
+  "context": "A ratchet drives one way only; a lever on its head picks which. A mechanic picking one up checks the lever first: on the wrong setting the pulls just click and the back-swings drive the bolt tighter, and a tight bolt stretched past its yield must be replaced. Undoing a bolt then means seating the socket square on the head, swinging the handle in short arcs (the pull drives, the back-swing clicks) until the bolt is free, and putting the tool away. Done by: automotive service technicians and mechanics (O*NET 49-3023.00), industrial machinery mechanics (49-9041.00), maintenance and repair workers (49-9071.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Work, fixed: a wooden block (8 x 8 x 3 cm) at x 27, y 0, with a steel L-bracket on it (6 x 7 cm plate, 0.5 cm thick, a 4 cm upstand on its +y edge); an M10 x 1.5 hex bolt (DIN 933, zinc-plated, 17 mm across flats, 6.4 mm head, red paint mark) with a 20 mm steel washer, tight in the plate at x 27, y 0. Tool: a 3/8 inch chrome ratchet (0.3 kg, 17 cm, black grip) with a 17 mm socket fitted, its direction lever set to tighten, lying in a wooden tray (6 x 22 cm) at x 22, y -3 to -25: the socket stands mouth down in a cradle at x 22, y -6, the handle pointing to -y, its end on a rest.",
+  "scoring": "Measured at the end by the paint mark on the bolt's head and by looking at the tray. 0 if at any point the bolt was turned more than 20 degrees tighter than it started (stretched: it cannot be undone). Otherwise: 1.0 if the bolt has turned out at least one full turn and the ratchet lies back in its tray (socket within 8 mm of its place, level within 8 degrees, handle along the tray within 15 degrees) with no part of either gripper within 1 cm of it, still (under 1 cm/s) for 1 s; 0.5 if the bolt is a full turn out but the ratchet is not back; 0.25 if the bolt has turned out 30 degrees or more but under a full turn; else 0.",
+  "run_limit": "1,600 steps (80 seconds at 20 Hz)",
+  "reset_notes": "Tighten the bolt to its marks (a new bolt if it was overtightened), set the ratchet's lever to tighten and lay it in its tray.",
+  "fidelity": "PhysX has no threads or pawls: our model. The lever is a hinge with a detent. The socket goes on within 1.5 mm of the bolt's axis (its chamfer steers it from 4 mm) and is then held on it; turned its driving way, it turns the bolt past a breakaway torque, else it clicks. The head is drawn turning and rising; a collider inside it is solid to the fingers. Torques scaled to the arms (0.12 N m to break loose). Boxes; grip friction 1.0.",
+  "scores": "Dream-1 run: 0.0 (the right arm reaches over the ratchet in its tray and over the bolt, closing its gripper, but never picks the ratchet up; the bolt is not turned); demo: 1.0 (success at step 938)",
+  "media": "M-9XWKZK"
+}
