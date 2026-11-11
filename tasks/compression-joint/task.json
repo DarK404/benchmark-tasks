@@ -1,0 +1,23 @@
+{
+  "title": "Make up a compression joint: pipe home, olive before nut, nut a turn past snug with a spanner",
+  "category": "Impact on jobs",
+  "keywords": [
+    "plumbing",
+    "compression fitting",
+    "olive",
+    "spanner",
+    "pipe joint",
+    "assembly order",
+    "bimanual",
+    "tightening"
+  ],
+  "instruction": "Join the copper pipe to the valve with the compression fitting.",
+  "context": "Compression fittings join copper pipe to valves, taps and appliances in every building. Making one up has a standard: the pipe fully home into the fitting's socket, the olive on before the nut so that it sits between the nut and the fitting, and the nut turned about a turn past snug (3/4 to 1 1/4). A forgotten or misplaced olive, or a pipe short of its stop, leaks; much further, the olive and the pipe are crushed. Done by: plumbers, pipefitters and steamfitters (O*NET 47-2152.00), heating and air-conditioning mechanics (49-9021.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed: a 15 mm brass compression ball valve on a wooden mounting block (6 x 4 cm) at x 30, y -3, its inlet facing up (the thread stub's top 4.2 cm up, the socket's stop 3 cm up). Loose: a 15 mm copper pipe tail (6 cm, pencil-marked 12 mm from its end) standing in a drilled wooden block (4.4 x 4.4 x 2.5 cm) at x 20, y 17; a brass olive (17.5 mm across, 7 mm long) and the brass compression nut (22 mm across flats, 12 mm tall, a red paint mark on a flat), lying on a wooden tray (6 x 11 x 1 cm) at x 27, y 6 and y 11; a 22 mm open-ended chrome spanner (0.1 kg, 13 cm) lying on its board at x 22, y -17, its jaw at x 27, the handle pointing to -x.",
+  "scoring": "Measured at the end by looking at the joint and the trays, with a pencil mark on the pipe and a paint mark on the nut. 0 if at any point the nut was turned more than 1 1/2 turns past snug (olive and pipe crushed). Otherwise: 1.0 if the joint is sealed (the pipe home, its end within 1 mm of the socket's stop; the olive under the nut; the nut 3/4 to 1 1/4 turns past snug), the spanner is back in its tray, and no part of either gripper is within 1 cm of the spanner, the nut or the pipe, all still (under 1 cm/s) for 1 s; 0.5 if sealed but the spanner is not back; 0.25 if the pipe is home and the olive under the nut on the thread but under 3/4 turn past snug; else 0 (no olive, the olive outside the nut, or the pipe short).",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Undo the nut, lift the pipe out, cut the olive off and fit a new one (olives are not reused once compressed); stand the pipe in its holder and put the nut, olive and spanner in their trays.",
+  "fidelity": "PhysX cannot cut a thread or compress an olive: our model. The socket holds the pipe on the axis; rings dropped over its top are kept centred and slide down; the olive rests in the stub's cone, the nut on it. Resting there the nut is on the thread and posed: it runs down 1.8 mm a turn, snug on the olive after 1 turn (real run-on is 3-4), crushed 1.5 turns past. A spanner jaw within 3 mm on the flats turns it. No torque modelled. Boxes, real sizes.",
+  "scores": "Dream-1 run: 0.0 (the left hand reaches down round the pipe tail in its holder but never lifts it out; the right moves over the valve and the trays; nothing is assembled); demo: 1.0 (success at step 1,913)",
+  "media": "M-G3L2AN"
+}
