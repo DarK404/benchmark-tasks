@@ -47,6 +47,7 @@ PARKED = {"driver_r": driver_at([*M.HOLDER_XY[0], M.TOP + 0.5 * MM]),
 def fresh():
     M.MODEL.clear()
     M.MODEL.origin = np.zeros(3)
+    M._reset_state()
     yield
 
 
@@ -127,16 +128,14 @@ def test_with_a_cam_closed_its_bolts_head_meets_the_cams_side():
         step(g)
     assert not M.MODEL.bolt_in[R] and M.MODEL.push[R] == 0.0
     step(M.MODEL.g_closed - 1.0 * MM)
-    assert 0.0 < M.MODEL.push[R] < M.MODEL.break_force and not M.MODEL.broken
+    assert M.MODEL.push[R] > 0.0 and not M.MODEL.bolt_in[R]
 
 
-def test_forced_onto_a_closed_cam_the_board_breaks_out_for_good():
+def test_shoved_hard_onto_a_closed_cam_the_shelf_still_stops_short():
     for g in np.linspace(M.START_GAP, M.MODEL.g_closed, 40):
         step(g)
     step(M.MODEL.g_closed - 3.0 * MM)  # 15 N
-    assert M.MODEL.broken
-    open_cams(M.MODEL.g_closed)
-    assert M.MODEL.broken
+    assert not any(M.MODEL.bolt_in) and M.MODEL.push[R] > 10.0
 
 
 def test_half_a_turn_clockwise_draws_the_joint_shut_and_locks_it():
@@ -198,7 +197,15 @@ def join():
 
 def test_joined_and_the_screwdrivers_back_succeeds():
     join()
-    assert M.score(states()) == 1.0 and M.success(states())
+    assert held(states()) == (1.0, True)
+
+
+def held(st, n=M.STILL_STEPS):
+    """success() then score() on the same state ``n`` times, as the run calls them; the last (score, success)."""
+    for _ in range(n):
+        ok = M.success(st)
+        out = (M.score(st), ok)
+    return out
 
 
 def test_joined_with_a_screwdriver_not_back_is_half():
@@ -221,10 +228,14 @@ def test_on_the_bolts_but_not_drawn_up_is_a_quarter():
     assert M.score(states(M.MODEL.g_home)) == 0.25
 
 
-def test_a_broken_out_edge_scores_nothing_for_good():
+def test_shoved_onto_closed_cams_scores_nothing():
     for g in np.linspace(M.START_GAP, M.MODEL.g_closed - 3.0 * MM, 40):
         step(g)
     assert M.score(states()) == 0.0 and not M.success(states())
+
+
+def test_the_cam_reaches_the_bolts_head():
+    assert abs(M.CAM_IN - (M.BOLT_LEN - M.HEAD_L / 2)) < M.CAM_R / 2
 
 
 def test_nothing_done_scores_nothing():

@@ -274,8 +274,8 @@ class CamLockJoint:
       shelf square to the face within ``align_deg``); otherwise the edge stands on the bolts' ends.
     - A cam's angle ``phi[k]`` is measured clockwise (seen from above) from open, its opening facing the bolt. Open
       (within 30 degrees), the bolt's head goes into it and the shelf comes up to ``g_home`` of the face; closed, the
-      head meets the cam's side ``g_closed`` short. Pushed on a closed cam harder than ``break_force``, the
-      particleboard round the cam breaks out (``broken``, latched).
+      head meets the cam's side ``g_closed`` short, and the shelf stops there however hard it is pushed (breaking the
+      board out takes far more force than these arms have; nothing breaks here).
     - With the head in it, the cam turned clockwise draws the bolt in (an eccentric: the gap closes as
       (1 + cos phi) / 2 of ``g_home``, shut at 180 degrees); past 30 degrees it holds the head, and the joint cannot be
       pulled apart. Its stops are at -10 and 200 degrees. With no bolt in it, it turns freely.
@@ -286,14 +286,14 @@ class CamLockJoint:
       blade's tip within ``mouth`` into the hole."""
 
     def __init__(self, shelf, drivers, cams, face_x, half, bolt_y, cam_xy, top, bolt_len=0.025, g_home=1.5e-3,
-                 g_closed=9.0e-3, align=2.5e-3, align_deg=2.5, break_force=10.0, k_stop=5000.0, capture=4.0e-3,
+                 g_closed=9.0e-3, align=2.5e-3, align_deg=2.5, k_stop=5000.0, capture=4.0e-3,
                  engage=2.0e-3, k_side=2000.0, k_guide=400.0, k_up=0.3, phi0=(0.0, 0.0), holes=(), mouth=6.0e-3):
         self.shelf, self.drivers, self.cams = shelf, list(drivers), list(cams)
         self.face_x, self.half, self.top = float(face_x), float(half), float(top)
         self.bolt_y = [float(v) for v in bolt_y]
         self.cam_xy = [np.asarray(c, float) for c in cam_xy]
         self.bolt_len, self.g_home, self.g_closed = bolt_len, g_home, g_closed
-        self.align, self.align_rad, self.break_force, self.k_stop = align, math.radians(align_deg), break_force, k_stop
+        self.align, self.align_rad, self.k_stop = align, math.radians(align_deg), k_stop
         self.capture, self.engage, self.k_side, self.k_guide, self.k_up = capture, engage, k_side, k_guide, k_up
         self.phi0 = tuple(float(p) for p in phi0)
         self.holes = [np.asarray(h, float) for h in holes]  # the holders' holes: (x, y, top z), world
@@ -315,7 +315,6 @@ class CamLockJoint:
         self.bolt_in = [False] * n  # the bolt's head in the cam
         self.gap = [1.0] * n
         self.push = [0.0] * n  # the force pushing the edge on at that bolt (N)
-        self.broken = False
         self.on = {d: None for d in self.drivers}  # the cam each screwdriver is in
         self._yaw = {d: 0.0 for d in self.drivers}
 
@@ -375,8 +374,6 @@ class CamLockJoint:
                     f = self.k_stop * (gap - target) - 5.0 * float(fs.vel[0])
             elif stop is not None and gap < stop:
                 f = self.k_stop * (gap - stop) - 5.0 * float(fs.vel[0])  # < 0: pushed back
-                if not self.is_open(k) and self.entered[k] and -f > self.break_force:
-                    self.broken = True
             self.push[k] = max(0.0, -f) if not self.bolt_in[k] else 0.0
             if f:
                 _wrench(acc, self.shelf, fs, np.array([f, 0.0, 0.0]), at)

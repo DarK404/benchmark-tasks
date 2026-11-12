@@ -4,7 +4,7 @@ screwdriver stands in a holder either side.
 
 The robot must join the shelf to the side with its cam locks: turn each cam's opening to the shelf's edge, push the
 shelf onto the bolts, turn the cams to draw the joint tight, and put the screwdrivers back. Pushed onto a cam that is
-still closed, the particleboard round the cam breaks out.
+still closed, the shelf stops 9 mm short of the side.
 
 Run it:  inspect-robots run --embodiment yam_arena -E task=cam_lock.py -E object_jitter=0 -E control_hz=20 \\
            --instruction "..." --scorer task_score ...
@@ -41,7 +41,9 @@ HANDLE_R, HANDLE_L = (0.85, 0.15, 0.10), (0.95, 0.75, 0.10)  # the two screwdriv
 camkit.METALLIC.update({ZINC: 0.3, STEEL: 0.35})
 
 # -- the cabinet side, upright in its jig ----------------------------------------------------------------------------
-FACE_X = 0.41  # the side's inner face (the shelf's edge meets it here)
+# WHY 0.40 (2026-11-12): with the cams 24 mm in from the edge (was 34) this keeps them where the demo's paths were
+# proven; at 0.41 the hand above a cam, 15 cm up, was 4 mm out of reach.
+FACE_X = 0.40  # the side's inner face (the shelf's edge meets it here)
 PANEL_T = 16.0 * MM
 SIDE_W, SIDE_H = 0.32, 0.12
 BOLT_Y = (-0.09, 0.09)  # the connecting bolts (right, left), at the shelf's mid-thickness
@@ -77,8 +79,12 @@ SIDE = body("side", pos=(FACE_X, 0.0, TOP), friction=0.6, shapes=_SS + _SV,
 # Its frame: origin at its middle, x towards its joining edge, z up.
 SHELF_D, SHELF_W = 0.20, 0.26
 HALF = SHELF_D / 2
-CAM_IN = 34.0 * MM  # the cams' middles in from the joining edge
-CAM_R = 7.5 * MM  # a 15 mm cam
+# A Minifix-type 15 mm cam connector, drilling distance B = 24 mm: the cam's housing in a 15 mm bore whose centre is 24
+# mm in from the joining edge, and the connecting bolt made for B = 24 mm standing out of the side's face, so that its
+# head reaches the housing's middle. WHY 24 (2026-11-12, review): 34 mm is the other standard distance B, which takes
+# a longer bolt; a cam 34 mm in could not reach the 25 mm bolt.
+CAM_IN = 24.0 * MM  # the cams' middles in from the joining edge (drilling distance B)
+CAM_R = 7.5 * MM  # a 15 mm cam, in a 15 mm bore
 CAM_XY = [(HALF - CAM_IN, y) for y in BOLT_Y]
 START_GAP = 30.0 * MM  # the shelf's edge from the side's face, as it lies at the start
 SHELF_X0 = FACE_X - START_GAP - HALF
@@ -199,8 +205,6 @@ def in_holder(driver, k) -> bool:
 
 def _update(objects) -> tuple[float, bool]:
     m = MODEL
-    if m.broken:
-        return 0.0, False
     if joined():
         drivers = [objects[d.name] for d in DRIVERS]
         if all(in_holder(drv, k) for k, drv in enumerate(drivers)) and min(
@@ -214,15 +218,33 @@ def _update(objects) -> tuple[float, bool]:
     return 0.0, False
 
 
+STILL_STEPS = 20  # 1 s at the 20 Hz control rate
+_STATE: dict = {}
+
+
+@camkit.on_reset
+def _reset_state() -> None:
+    _STATE.update(still=0)
+
+
+_reset_state()
+
+
 def success(objects) -> bool:
     """The shelf joined (both cams locked, the joint shut), the screwdrivers back in their holders, released and still
-    for 1 s; the particleboard never broken out."""
-    return _update(objects)[1]
+    (held 1 s by the run). It also counts the steps the full-score state has held, for score()."""
+    ok = _update(objects)[1]
+    _STATE["still"] = _STATE["still"] + 1 if ok else 0
+    return ok
 
 
 def score(objects) -> float:
-    """1.0 / 0.5 / 0.25 / 0 as in the README; a broken-out edge latches 0."""
-    return _update(objects)[0]
+    """1.0 / 0.5 / 0.25 / 0 as in the README. 1.0 only once the full-score state has held for 1 s (counted by success(),
+    which the run calls first every step); until then 0.5."""
+    tier = _update(objects)[0]
+    if tier == 1.0 and _STATE["still"] < STILL_STEPS:
+        return 0.5
+    return tier
 
 
 # -- scripted demo -------------------------------------------------------------------------------------------------
