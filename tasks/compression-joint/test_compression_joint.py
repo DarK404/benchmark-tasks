@@ -44,6 +44,7 @@ FAR = {"olive": fr([0.27, 0.06, M.TOP + 0.0135]), "nut": fr([0.27, 0.11, M.TOP +
 def fresh():
     M.MODEL.clear()
     M.MODEL.origin = np.zeros(3)
+    M._reset_state()
     yield
 
 
@@ -184,10 +185,25 @@ def states(spanner_back=True):
     return out
 
 
+def held(st, n=M.STILL_STEPS):
+    """success() then score() on the same state ``n`` times, as the run calls them; the last (score, success)."""
+    for _ in range(n):
+        ok = M.success(st)
+        out = (M.score(st), ok)
+    return out
+
+
 def test_sealed_and_the_spanner_back_succeeds():
     olive_then_nut()
     strokes(12)
-    assert M.score(states()) == 1.0 and M.success(states())
+    assert held(states()) == (1.0, True)
+
+
+def test_full_only_after_a_second_still():
+    olive_then_nut()
+    strokes(12)
+    assert held(states(), M.STILL_STEPS - 1)[0] == 0.5
+    assert held(states(), 1)[0] == 1.0
 
 
 def test_sealed_but_the_spanner_not_back_is_half():
@@ -211,7 +227,22 @@ def test_no_olive_scores_nothing():
 def test_overtightened_scores_nothing_for_good():
     olive_then_nut()
     strokes(16)
-    assert M.score(states()) == 0.0 and not M.success(states())
+    assert M.MODEL.crushed and held(states()) == (0.0, False)
+
+
+def test_past_one_and_a_quarter_turns_scores_nothing():
+    olive_then_nut()
+    strokes(14)
+    assert 1.25 < M.MODEL.turns_past() < 1.5 and not M.MODEL.crushed
+    assert held(states()) == (0.0, False)
+
+
+def test_backing_off_an_overtightened_nut_does_not_undo_it():
+    olive_then_nut()
+    strokes(14)
+    strokes(2, a=-120.0, b=-60.0)  # two strokes back
+    assert 0.75 <= M.MODEL.turns_past() <= 1.25
+    assert held(states()) == (0.0, False)
 
 
 def test_nothing_done_scores_nothing():

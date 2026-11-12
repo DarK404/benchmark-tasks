@@ -64,6 +64,9 @@ def _valve_shapes() -> tuple[list, list]:
         cyl((AX, AY, BODY_TOP + 6.0 * MM), STUB_R, 12.0 * MM, BRASS),  # the threaded stub
         *[cyl((AX, AY, BODY_TOP + (1.5 + 1.8 * k) * MM), STUB_R + 0.3 * MM, 0.5 * MM, DARK) for k in range(6)],
         cyl((AX, AY, STUB + 0.1 * MM), 7.6 * MM, 0.2 * MM, DARK),  # the socket's mouth
+        # the snug mark: a red paint line on the body's top, where the nut's paint mark comes at snug
+        box((AX + 12.0 * MM, AY, BODY_TOP + 0.05 * MM), (2.0 * MM, 3.0 * MM, 0.1 * MM), RED),
+        box((AX + 13.05 * MM, AY, BODY_TOP - 3.0 * MM), (0.1 * MM, 3.0 * MM, 6.0 * MM), RED),
         cyl((AX + 0.020, AY, 17.0 * MM), STUB_R, 14.0 * MM, BRASS, axis="X"),  # the outlet
         box((AX, AY - 0.016, 17.0 * MM), (6.0 * MM, 6.0 * MM, 6.0 * MM), CHROME),  # the spindle
         box((AX, AY - 0.020, 17.0 * MM + 12.0 * MM), (8.0 * MM, 4.0 * MM, 30.0 * MM), RED),  # the lever
@@ -106,7 +109,8 @@ def _nut_shapes() -> tuple[list, list]:
              *ring(-NUT_LEN / 2, -NUT_LEN / 2 + 1.0 * MM, 10.2 * MM, NUT_AF / 2, BRASS, segments=12)]
     seen = [*hexagon((0.0, 0.0, 0.0), NUT_AF, NUT_LEN, BRASS),
             cyl((0.0, 0.0, NUT_LEN / 2 + 0.05 * MM), 8.0 * MM, 0.1 * MM, DARK),  # its bore, seen from above
-            box((NUT_AF / 2 + 0.05 * MM, 0.0, 0.0), (0.1 * MM, 3.0 * MM, NUT_LEN), RED)]  # a paint mark on a flat
+            box((NUT_AF / 2 + 0.05 * MM, 0.0, 0.0), (0.1 * MM, 3.0 * MM, NUT_LEN), RED),  # a paint mark on a flat
+            box((9.6 * MM, 0.0, NUT_LEN / 2 + 0.05 * MM), (2.6 * MM, 2.0 * MM, 0.1 * MM), RED)]  # and on its top
     return solid, seen
 
 
@@ -192,9 +196,24 @@ def in_tray(spanner) -> bool:
                 and abs(math.remainder(yaw - math.pi, 2 * math.pi)) < math.radians(15.0))
 
 
+OVER = 1.25  # turns past snug: further than this the olive is over-compressed (backing off does not undo it)
+STILL_STEPS = 20  # 1 s at the 20 Hz control rate
+_STATE: dict = {}
+
+
+@fittingkit.on_reset
+def _reset_state() -> None:
+    _STATE.update(still=0)
+
+
+_reset_state()
+
+
 def _update(objects) -> tuple[float, bool]:
+    """(tier, whether the full-score state holds this step). The full score also needs it held for 1 s. The olive's
+    compression is the furthest the nut has been turned past snug, not where it ends: backing off does not undo it."""
     m = MODEL
-    if m.crushed:
+    if m.crushed or m.furthest > OVER:
         return 0.0, False
     if m.sealed():
         sp = objects["spanner"]
@@ -202,20 +221,28 @@ def _update(objects) -> tuple[float, bool]:
         if in_tray(sp) and clear >= CLEAR:
             return 1.0, bool(sp.resting(max_speed=STILL) and objects["pipe"].resting(max_speed=STILL))
         return 0.5, False
-    if m.threaded and m.olive_in and m.pipe_home():
+    if m.threaded and m.olive_in and m.pipe_home() and m.turns_past() < 0.75:
         return 0.25, False
     return 0.0, False
 
 
 def success(objects) -> bool:
-    """The joint made up: the pipe home, the olive under the nut, the nut 3/4 to 1 1/4 turns past snug; the spanner
-    back in its tray, released and still for 1 s; never overtightened."""
-    return _update(objects)[1]
+    """The joint made up: the pipe home, the olive under the nut, the nut 3/4 to 1 1/4 turns past snug (and never
+    further); the spanner back in its tray, released and still (held 1 s by the run). It also counts the steps the
+    full-score state has held, for score()."""
+    ok = _update(objects)[1]
+    _STATE["still"] = _STATE["still"] + 1 if ok else 0
+    return ok
 
 
 def score(objects) -> float:
-    """1.0 / 0.5 / 0.25 / 0 as in the README; an overtightened joint latches 0."""
-    return _update(objects)[0]
+    """1.0 / 0.5 / 0.25 / 0 as in the README; past 1 1/4 turns 0, past 1 1/2 latched (the olive crushed). 1.0 only once
+    the full-score state has held for 1 s (counted by success(), which the run calls first every step); until then
+    0.5."""
+    tier = _update(objects)[0]
+    if tier == 1.0 and _STATE["still"] < STILL_STEPS:
+        return 0.5
+    return tier
 
 
 # -- scripted demo -------------------------------------------------------------------------------------------------

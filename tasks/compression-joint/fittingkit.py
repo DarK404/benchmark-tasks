@@ -311,6 +311,7 @@ class CompressionJoint:
         self.theta = 0.0
         self.olive_in = False
         self.crushed = False
+        self.furthest = 0.0  # the most turns past snug reached (the olive's compression; backing off does not undo it)
         self.engaged = False
         self._psi = 0.0
 
@@ -415,6 +416,7 @@ class CompressionJoint:
                     if held != new:  # against a stop: the nut holds the spanner
                         _torque(acc, self.spanner, np.array([0.0, 0.0, 2.0 * (new - held)]))
                     self.theta = held
+                    self.furthest = max(self.furthest, self.turns_past())
                     if self.turns_past() > self.crush:
                         self.crushed = True
                     if self.theta < 0.0:
