@@ -7,9 +7,10 @@ and under the lid's edge, and lever the lid up by pivoting the blade on the rim.
 and one arm can pry only a short arc of the rim, so the other hand turns the tin between pries, as a person does.
 Once the lid is loose all round, the robot lifts it off and puts it on the table.
 
-Painters and decorators open tins this way many times a day. The task tests using a hand tool as a lever: placing a
-thin blade precisely in a narrow gap, making its own pivot on the rim, and working round a press-fit seal over
-several pries with both hands taking turns.
+Repainting a room is one of the most common jobs people do at home, and it starts here: a paint tin's lid has no
+edge to grip, and the familiar way to open it is a flat screwdriver levered against the rim, a little at a time round
+the lid. The task tests using a household hand tool as a lever: placing a thin blade precisely in a narrow gap,
+making its own pivot on the rim, and working round a press-fit seal over several pries with both hands taking turns.
 
 ## Files
 
@@ -70,17 +71,18 @@ Evaluated every control step; the score at the end of the episode counts (`SCORE
 |---|---|---|
 | 0 | at any point: the tin tilted more than 15 degrees, moved more than 3 cm from its start, or the tin or the lid fell off the table (more than 2 cm below its top); or the screwdriver's blade never went into the groove between the lid and the rim | video |
 | 1.0 | the lid lies flat on the table (its lowest point within 5 mm of it, tilted under 10 degrees, either face up), its edge at least 5 mm clear of the tin, no part of either gripper within 2 cm of it, and the lid and the tin still (moving under 1 cm/s) for 1 s | ruler, top photo |
-| 0.5 | the lid is off the tin (its centre more than 4 cm from the tin's axis) but not as for 1.0: propped against the tin, tilted on the table, or still held | ruler, photo |
+| 0.5 | the lid is off the tin (its centre more than 4 cm from the tin's axis) but not as for 1.0: propped against the tin, tilted on the table, still held, or not yet still for 1 s | ruler, photo |
 | 0.25 | the lid is still on the tin, but lifted out of the rim round at least half its edge (in simulation: 6 of the 12 seal catches freed) | 1 mm feeler gauge under the lid's edge |
 | 0 | anything else | |
 
-The violations latch: a tin tipped over and stood back up, or pushed away and back, still scores 0. The groove check
+The violations latch: a tin tipped over and stood back up, or pushed away and back, still scores 0. `score()` gives
+1.0 only once the full-score state has held, still and let go, for 1 s (until then 0.5). The groove check
 makes the lid have to be levered, not pulled or knocked off; the blade passing through the groove on its way under
 the lid's edge is what it records. A scripted check without the tool (`TIN_DEMO=pinch`: the left gripper reaches into
 the groove, closes on the sealed lid and pulls up) lifted and tipped the whole tin by 20 degrees while the lid stayed
 sealed: score 0.
 
-Offline checks of every tier, latch and edge case: `python -m pytest -q test_paint_tin.py` (39 tests, no simulator).
+Offline checks of every tier, latch and edge case: `python -m pytest -q test_paint_tin.py` (40 tests, no simulator).
 
 ## Runtime and seeds
 

@@ -218,7 +218,7 @@ _STATE: dict = {}
 
 @tinkit.on_reset
 def _reset_state() -> None:
-    _STATE.update(tin0=None, tool_in_groove=False, violation=None)
+    _STATE.update(tin0=None, tool_in_groove=False, violation=None, still=0)
 
 
 _reset_state()
@@ -267,14 +267,24 @@ def _update(objects) -> tuple[float, bool]:
     return (0.25 if int((~SEAL.held).sum()) >= LOOSE_CATCHES else 0.0), False
 
 
+STILL_STEPS = 20  # 1 s at the 20 Hz control rate
+
+
 def success(objects) -> bool:
-    """The lid levered off and lying flat on the table clear of the tin, let go, everything still (held 1 s)."""
-    return _update(objects)[1]
+    """The lid levered off and lying flat on the table clear of the tin, let go, everything still (held 1 s by the
+    run). It also counts the steps the full-score state has held, for score()."""
+    ok = _update(objects)[1]
+    _STATE["still"] = _STATE["still"] + 1 if ok else 0
+    return ok
 
 
 def score(objects) -> float:
-    """1.0 / 0.5 / 0.25 / 0 as in the table above, from the state at the end; violations latch."""
-    return _update(objects)[0]
+    """1.0 / 0.5 / 0.25 / 0 as in the table above, from the state at the end; violations latch. 1.0 only once the
+    full-score state has held for 1 s (counted by success(), which the run calls first every step); until then 0.5."""
+    tier = _update(objects)[0]
+    if tier == 1.0 and _STATE["still"] < STILL_STEPS:
+        return 0.5
+    return tier
 
 
 # -- scripted demo -------------------------------------------------------------------------------------------------

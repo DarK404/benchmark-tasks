@@ -77,10 +77,12 @@ def objs(lid, tin_state=None, tool=TOOL_PARKED):
     return {"lid": lid, "tin": tin() if tin_state is None else tin_state, "screwdriver": tool, "stand": None}
 
 
-def run(*frames):
-    """Score a trial frame by frame; returns (score, success) of the last frame."""
-    for f in frames:
-        out = (M.score(f), M.success(f))
+def run(*frames, hold=M.STILL_STEPS):
+    """Score a trial frame by frame, then the last frame ``hold`` more times, calling success() then score() each
+    frame as the run does; returns (score, success) of the last frame."""
+    for f in list(frames) + [frames[-1]] * hold:
+        ok = M.success(f)
+        out = (M.score(f), ok)
     return out
 
 
@@ -105,14 +107,20 @@ def test_lid_upside_down_on_the_table_counts_as_flat():
     assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(tilt=180.0))) == (1.0, True)
 
 
-def test_lid_still_moving_is_not_success_yet():
+def test_lid_still_moving_is_not_full_yet():
     pried()
-    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(moving=True))) == (1.0, False)
+    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(moving=True))) == (0.5, False)
 
 
-def test_tin_still_moving_is_not_success_yet():
+def test_tin_still_moving_is_not_full_yet():
     pried()
-    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(), tin(moving=True))) == (1.0, False)
+    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(), tin(moving=True))) == (0.5, False)
+
+
+def test_full_only_after_a_second_still():
+    pried()
+    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table()), hold=M.STILL_STEPS - 2)[0] == 0.5
+    assert run(objs(lid_on_table()), hold=0)[0] == 1.0
 
 
 def test_lid_still_in_the_gripper_on_the_table_is_half(monkeypatch):
