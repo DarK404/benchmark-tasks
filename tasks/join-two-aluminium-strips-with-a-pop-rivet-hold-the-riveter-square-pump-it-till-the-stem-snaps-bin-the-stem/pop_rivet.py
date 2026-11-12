@@ -58,8 +58,12 @@ WORK = body("work", pos=(*WORK_XY, TOP), friction=0.6, shapes=[
 # -- the rivets, stem up in their holder ---------------------------------------------------------------------------
 HOLDER_XY = (0.21, -0.05)
 HOLDER_H = 20.0 * MM
-HEAD_T, HEAD_R, SHANK_R, SHANK_L = 1.5 * MM, 4.75 * MM, 2.4 * MM, 12.0 * MM
-STEM_R, STEM_L = 1.45 * MM, 25.0 * MM
+# A 4.8 x 8 mm dome-head blind rivet, aluminium body, zinc-plated steel mandrel: 9.5 mm head, 8 mm shank, rated grip
+# 2.0-3.5 mm (the two 1.5 mm strips make 3.0 mm), for a 4.9 mm hole; mandrel 2.7 mm across, 28 mm long overall.
+# WHY 8 mm (2026-11-12, review): a 12 mm shank is the length for a 6-8 mm grip, not this 3 mm stack.
+HEAD_T, HEAD_R, SHANK_R, SHANK_L = 1.5 * MM, 4.75 * MM, 2.4 * MM, 8.0 * MM
+STEM_R, STEM_L = 1.35 * MM, 28.0 * MM - HEAD_T - SHANK_L  # the stem above the head (the rest runs through the shank)
+GRIP_RANGE = (2.0 * MM, 3.5 * MM)
 RIVET_DY = (-8.0 * MM, 8.0 * MM)
 HOLDER = body("rivet_holder", pos=(*HOLDER_XY, TOP), friction=0.6, shapes=[
     box((0.0, 0.0, HOLDER_H / 2), (0.03, 0.04, HOLDER_H), WOOD)])
@@ -244,15 +248,34 @@ def _update(objects) -> tuple[float, bool]:
     return 0.0, False
 
 
+STILL_STEPS = 20  # 1 s at the 20 Hz control rate
+_STATE: dict = {}
+
+
+@rivetkit.on_reset
+def _reset_state() -> None:
+    _STATE.update(still=0)
+
+
+_reset_state()
+
+
 def success(objects) -> bool:
     """The rivet set square and tight through both strips, its spent stem in the scrap tray, the riveter back in its
-    stand, released and still for 1 s; never pulled crooked or loose (latched)."""
-    return _update(objects)[1]
+    stand, released and still (held 1 s by the run); never pulled crooked or loose (latched). It also counts the steps
+    the full-score state has held, for score()."""
+    ok = _update(objects)[1]
+    _STATE["still"] = _STATE["still"] + 1 if ok else 0
+    return ok
 
 
 def score(objects) -> float:
-    """1.0 / 0.5 / 0.25 / 0 as in the README; a rivet pulled crooked or loose latches 0."""
-    return _update(objects)[0]
+    """1.0 / 0.5 / 0.25 / 0 as in the README; a rivet pulled crooked or loose latches 0. 1.0 only once the full-score
+    state has held for 1 s (counted by success(), which the run calls first every step); until then 0.5."""
+    tier = _update(objects)[0]
+    if tier == 1.0 and _STATE["still"] < STILL_STEPS:
+        return 0.5
+    return tier
 
 
 # -- scripted demo -------------------------------------------------------------------------------------------------
@@ -282,7 +305,9 @@ def fingers(gap: float) -> float:
 
 # where the held riveter hangs from the planned grip, and how far the arm sags under it (measured in sim 2026-11-10)
 HANG = np.array([1.7, -5.4, -2.9]) * MM
-HANG_ON = np.array([-0.7, -5.4, -2.9]) * MM  # ...and where it sits, its rivet's end on the strip
+# WHY re-measured (2026-11-12): with the 8 mm rivet (was 12) the riveter sits 4 mm lower on the strip and hangs 3.5 mm
+# further to +y; from the trace of the first run.
+HANG_ON = np.array([0.4, -1.9, -2.9]) * MM  # ...and where it sits, its rivet's end on the strip
 # ...and after the squeezes, which slide it 12 mm along between the fingers (it is set down 18 mm off otherwise, on the
 # holster's rim, and falls over)
 HANG_AFTER = np.array([-10.4, -3.0, -2.6]) * MM

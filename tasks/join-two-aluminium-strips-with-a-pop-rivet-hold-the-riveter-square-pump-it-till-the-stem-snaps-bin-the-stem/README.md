@@ -60,7 +60,7 @@ work.
 4. Over the scrap tray it eases the handles wide open, and the spent stem drops out; it stands the riveter back in its
    holster and lifts clear of the handles.
 
-The demo reaches 1.0 (success) in 809 steps (40 s). The riveter stays within 4.5 degrees of square while
+The demo reaches 1.0 (success) in 810 steps (40.5 s). The riveter stays within 4.5 degrees of square while
 the rivet is pulled. No step of the demo is clamped by the run's delta-limit guard (the gripper may change by at most
 5% of its range per step); `test_pop_rivet.py` checks every step against it, and checks that every pose along the arm's
 path is reached.
@@ -73,11 +73,12 @@ Evaluated every control step; the score at the end of the episode counts (`SCORE
 |---|---|---|
 | 0 (latched) | at any point the rivet pulled with the riveter tilted over 6 degrees, or not pressed on its head: set crooked or loose | look at the head; try to turn the strips |
 | 1.0 | the rivet set (its stem snapped) through both strips; the spent stem in the scrap tray; the riveter standing back in its holster, no part of either gripper within 1 cm of it, still (under 1 cm/s) for 1 s | look |
-| 0.5 | the rivet set, but the stem not in the tray (left in the riveter, on the work or the bench) or the riveter not back | look |
+| 0.5 | the rivet set, but the stem not in the tray (left in the riveter, on the work or the bench), the riveter not back, or not yet still for 1 s | look |
 | 0.25 | a rivet in the hole, not set | look |
 | 0 | anything else | |
 
-A crooked or loose rivet latches: it scores 0 whatever follows. Two scripted checks (`RIVET_DEMO=...` in the demo)
+A crooked or loose rivet latches: it scores 0 whatever follows. `score()` gives 1.0 only once the full-score state has
+held for 1 s (until then 0.5). Two scripted checks (`RIVET_DEMO=...` in the demo)
 show what falls short:
 
 - `tilted`: the same job, pumping with the hand 16 mm to one side, so the riveter leans about 8 degrees on the rivet:
@@ -85,11 +86,11 @@ show what falls short:
 - `nobin`: the spent stem let go over the work: 0.5.
 
 Offline checks of the riveting model, every tier, the latch and the demo: `python -m pytest -q test_pop_rivet.py`
-(26 tests, no simulator).
+(28 tests, no simulator).
 
 ## Runtime and seeds
 
-Measured on an L40S with the viewer on, Isaac Sim's start-up included: the demo trial (809 steps, 40 s of
+Measured on an L40S with the viewer on, Isaac Sim's start-up included: the demo trial (810 steps, 40.5 s of
 simulated time) took 2.6 minutes of wall-clock time; the Dream-1 trial (the full 1,600 steps, 80 s simulated)
 took 4.1 minutes. The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
 
@@ -110,15 +111,18 @@ took 4.1 minutes. The layout is fixed (`-E object_jitter=0`); there are no seeds
   fingers pressed on both grips as the handles open.
 - **Geometry.** Rigid bodies built from boxes: the riveter (0.36 kg head and fixed handle, 0.06 kg sprung handle on a
   PhysX hinge) with 3 cm wide grips, friction 1.0; the strips, block, holder, holster and tray fixed. The rivets,
-  stems and the set rivet's tail are drawn by bodies the model moves.
+  stems and the set rivet's tail are drawn by bodies the model moves. The rivets are drawn at their real size (8 mm shank,
+  18.5 mm of mandrel standing above the head).
 - **Arms.** The simulated arms are soft and sag about 8 mm under the riveter; the demo allows for that and for how
   the riveter hangs between the fingers (it hangs a few millimetres off, and shifts as the handles are pumped).
 
 ## Real-world build
 
 Two aluminium strips (120 x 30 x 1.5 mm) with a 4.9 mm hole, clamped on a drilled wooden block; a plier-type hand
-riveter with a 4.8 mm nosepiece in a wooden holster; 4.8 mm aluminium blind rivets (12 mm grip) in a drilled wooden
-holder; a small steel tray. Positions are in `task.json`.
+riveter with a 4.8 mm nosepiece in a wooden holster; two 4.8 x 8 mm dome-head blind rivets in a drilled wooden holder
+(aluminium body, zinc-plated steel mandrel; 9.5 mm head, 8 mm shank, mandrel 2.7 mm across and 28 mm long overall;
+for a 4.9 mm hole). The 8 mm is the shank's length; the rivet's rated grip range, the material thickness it joins, is
+2.0 to 3.5 mm, and the two strips make 3.0 mm. A small steel tray. Positions are in `task.json`.
 
 ## Reset between trials
 

@@ -41,6 +41,7 @@ def frames(nose, angle_deg=17.0, tilt_deg=0.0):
 @pytest.fixture(autouse=True)
 def fresh():
     M.MODEL.clear()
+    M._reset_state()
     M.MODEL.origin = np.zeros(3)
     yield
 
@@ -181,7 +182,25 @@ def finished(place="tray"):
 
 def test_set_binned_and_holstered_succeeds():
     finished()
-    assert M.score(states()) == 1.0 and M.success(states())
+    assert held(states()) == (1.0, True)
+
+
+def held(st, n=M.STILL_STEPS):
+    """success() then score() on the same state ``n`` times, as the run calls them; the last (score, success)."""
+    for _ in range(n):
+        ok = M.success(st)
+        out = (M.score(st), ok)
+    return out
+
+
+def test_full_only_after_a_second_still():
+    finished()
+    assert held(states(), M.STILL_STEPS - 1)[0] == 0.5
+    assert held(states(), 1)[0] == 1.0
+
+
+def test_the_rivet_is_rated_for_the_two_strips():
+    assert M.GRIP_RANGE[0] <= 2 * M.STRIP_T <= M.GRIP_RANGE[1]
 
 
 def test_the_stem_left_on_the_work_is_half():
