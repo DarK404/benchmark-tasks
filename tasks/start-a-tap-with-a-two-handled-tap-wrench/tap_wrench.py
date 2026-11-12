@@ -3,11 +3,11 @@ screw handle towards the robot, clamps an aluminium block (60 x 60 x 40 mm) whos
 hand tap stands in a hole drilled in the block's top, started square, with a few threads cut. A bar tap wrench clamps
 the tap's square end: a round steel centre with two straight round handles with knurled grips, 280 mm across,
 125 mm above the table, pointing back-left and front-right. A white paint mark on the back-left handle's end and a
-felt-pen line on the block's top show how far it has turned.
+felt-pen line on the block's top show how far it has turned. Every trial uses a fresh block, pre-started the same.
 
 Run it:  inspect-robots run --embodiment yam_arena -E task=tap_wrench.py -E object_jitter=0 -E control_hz=20 \\
-           --instruction "Start the tap: turn it a quarter turn in with both hands on the wrench, then back it off at
-           least a tenth of a turn to break the chip, and let go." --scorer task_score ...
+           --instruction "Start the tap: turn it a quarter turn in, then back it off at least a tenth of a turn to
+           break the chip, and let go." --scorer task_score ...
 """
 
 from __future__ import annotations
@@ -176,38 +176,41 @@ OBJECTS = [VISE, BLOCK_BODY, WRENCH]
 tapkit.register(*OBJECTS)
 
 # The thread: M10 x 1.5. WHY 0.9 N m to cut (2026-11-07, sim trace): the simulated arms are soft, about 0.3 N/mm at
-# the gripper, so the push per hand is kept small: 0.9 N m with the hands 120 mm out is 3.75 N each. Turning by one
-# handle alone loads the tap sideways by its whole push, 7.5 N, over the 5 N limit. A real tap starting a thread in
-# aluminium takes about this much.
+# the gripper, so the push per hand is kept small: 0.9 N m with the hands 120 mm out is 3.75 N each. A real tap
+# starting a thread in aluminium takes about this much. Turning by one handle alone pushes the tap sideways with the
+# whole 7.5 N, 40 mm above the block: it leans, and cuts its thread leaning (see tapkit.Thread).
+# WHY these lean constants: see the 2026-11-12 tuning note in the README's Fidelity section.
 TORQUE_IN = float(os.environ.get("TAP_TORQUE", "0.9"))
-SIDE_LIMIT = 5.0
-THREAD = tapkit.add_model(Thread("wrench", origin=(*TAP_XY, TOP + BLOCK_TOP),
-                                 pitch=1.5 * MM, torque_in=TORQUE_IN, torque_out=0.3, side_limit=SIDE_LIMIT,
-                                 tilt_limit=2.0, axial_limit=60.0))
+K_TILT = float(os.environ.get("TAP_KTILT", "6.0"))  # N m/rad: the few threads cut so far hold the tap's lean
+FOLLOW_TURNS = float(os.environ.get("TAP_FOLLOW", "0.1"))  # the thread takes on the tap's lean over a tenth of a turn
+THREAD = tapkit.add_model(Thread("wrench", origin=(*TAP_XY, TOP + BLOCK_TOP), pitch=1.5 * MM, torque_in=TORQUE_IN,
+                                 torque_out=0.3, k_tilt=K_TILT, follow_turns=FOLLOW_TURNS))
 
 
 # -- scoring -------------------------------------------------------------------------------------------------------
+# 0     the thread cut crooked: the tap, let go, leans more than 2 degrees off square (an engineer's square stood on
+#       the block beside it shows a gap over 1.4 mm at 40 mm up); the part is scrap
 # 1.0   the tap turned a quarter turn in (90 degrees clockwise seen from above) and then backed off at least a tenth
 #       of a turn (36 degrees) from the furthest it went in; no part of either gripper within 10 mm of the wrench;
 #       the wrench still (under 1 cm/s and 0.5 rad/s) for 1 s
-# 0.5   a quarter turn in, not backed off as for 1.0
+# 0.5   a quarter turn in, not backed off and let go as for 1.0 (or not yet still for 1 s)
 # 0.25  a tenth of a turn in (36 degrees)
-# 0     anything else. Also 0, latched for the rest of the trial: the tap snapped (pushed sideways more than 5 N,
-#       smoothed over 0.1 s, or tilted more than 2 degrees), or its thread stripped (pushed or pulled along its axis
-#       more than 60 N). Backing off counts only after the quarter turn in.
+# 0     anything else. Backing off counts only after the quarter turn in.
 SCORE_OVER = "end"
 RUN_LIMIT_STEPS = 1200
 IN_TURNS = 0.25
 BACK_TURNS = 0.10
 START_TURNS = 0.10
 CLEAR = 10.0 * MM
+LEAN_LIMIT = 2.0  # deg
+STILL_STEPS = 20  # 1 s at the 20 Hz control rate
 
 _STATE: dict = {}
 
 
 @tapkit.on_reset
 def _reset_state() -> None:
-    _STATE.update(violation=None, deepest=0.0, quarter=False, backed=False)
+    _STATE.update(deepest=0.0, quarter=False, backed=False, still=0)
 
 
 _reset_state()
@@ -225,13 +228,12 @@ def fingers_to(state, spec) -> float:
 
 
 def _update(objects) -> tuple[float, bool]:
-    if _STATE["violation"] is None and THREAD.snapped:
-        _STATE["violation"] = THREAD.snapped
+    """(tier, whether the full-score state holds this step). The full score also needs it held for 1 s."""
     turns = THREAD.turns
     _STATE["deepest"] = max(_STATE["deepest"], turns)
     _STATE["quarter"] |= _STATE["deepest"] >= IN_TURNS
     _STATE["backed"] |= _STATE["quarter"] and _STATE["deepest"] - turns >= BACK_TURNS
-    if _STATE["violation"]:
+    if THREAD.lean > LEAN_LIMIT:
         return 0.0, False
     wrench = objects["wrench"]
     if _STATE["backed"] and fingers_to(wrench, WRENCH) >= CLEAR:
@@ -242,14 +244,20 @@ def _update(objects) -> tuple[float, bool]:
 
 
 def success(objects) -> bool:
-    """A quarter turn in, then backed off a tenth, the tap never side-loaded or tilted past its limits, both grippers
-    off the wrench, still for 1 s."""
-    return _update(objects)[1]
+    """A quarter turn in, then backed off a tenth, the thread square, both grippers off the wrench, the wrench still
+    (held for 1 s by the run). It also counts the steps the full-score state has held, for score()."""
+    ok = _update(objects)[1]
+    _STATE["still"] = _STATE["still"] + 1 if ok else 0
+    return ok
 
 
 def score(objects) -> float:
-    """1.0 / 0.5 / 0.25 / 0 as in the table above; a snapped tap latches 0."""
-    return _update(objects)[0]
+    """1.0 / 0.5 / 0.25 / 0 as in the table above. 1.0 only once the full-score state has held for 1 s (counted by
+    success(), which the run calls first every step); until then 0.5."""
+    tier = _update(objects)[0]
+    if tier == 1.0 and _STATE["still"] < STILL_STEPS:
+        return 0.5
+    return tier
 
 
 # -- scripted demo -------------------------------------------------------------------------------------------------

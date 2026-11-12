@@ -11,7 +11,7 @@ What it adds to a plain task file:
   loader accepts it in ``OBJECTS``; ``size`` is its bounding box and ``pos`` is the body's origin. ``inertia``
   optionally sets its principal moments of inertia.
 - :class:`Thread`: a tap started in a threaded hole: tied to the hole's axis, advancing one pitch per turn,
-  resisting being turned, and recording the side load and tilt that would snap a real tap.
+  resisting being turned; pushed off square while it cuts, it cuts the thread crooked, and the lean stays.
 - Force models run before every physics substep (240 Hz), so a quick motion cannot skip them.
 - :func:`tilted`: a waypoint orientation for ``yam_arena.demo`` that is not a straight-down grip.
 - :func:`finger_points`: the grippers' collision-hull vertices, for scoring whether a gripper touches a part.
@@ -233,18 +233,23 @@ def _wrench(acc: dict, name: str, frame: Frame, force, at) -> None:
 class Thread:
     """A tap started square in a threaded hole, as forces on the tap's body (with its wrench).
 
-    The hole's axis is vertical through ``origin`` (world, m), where the body's origin sits at the start; body z is
-    the tap's axis. Turned clockwise seen from above (into the hole) the tap goes ``pitch`` deeper per turn: a stiff
-    spring along the axis ties its height to its turn. Stiff springs hold the body's origin on the axis (``k_side``)
-    and its axis upright (``k_tilt``). Turning it takes ``torque_in`` N m clockwise and ``torque_out`` backing out:
-    stick-slip friction, a stiff torsional spring (``k_stick`` N m/rad, damped ``c_spin``) anchored where the tap
-    last stopped, whose anchor follows the tap whenever the spring's torque would pass those limits. WHY stick-slip
-    (2026-11-07): friction computed from the last substep's spin let a held tap creep unless its inertia was raised
-    a hundredfold, and that inertia lagged the wrench 9 degrees behind the hands.
+    The hole's axis starts vertical through ``origin`` (world, m), where the body's origin sits at the start; body z
+    is the tap's axis. Turned clockwise seen from above (into the hole) the tap goes ``pitch`` deeper per turn: a
+    stiff spring along the axis ties its height to its turn. A stiff spring holds the body's origin on the axis
+    (``k_side``); a softer one (``k_tilt``) holds the tap's axis along the thread's (``axis``): a side push on the
+    wrench leans the tap, as the few threads cut so far let a real one lean. Turning it takes ``torque_in`` N m
+    clockwise and ``torque_out`` backing out: stick-slip friction, a stiff torsional spring (``k_stick`` N m/rad,
+    damped ``c_spin``) anchored where the tap last stopped, whose anchor follows the tap whenever the spring's torque
+    would pass those limits. WHY stick-slip (2026-11-07): friction computed from the last substep's spin let a held
+    tap creep unless its inertia was raised a hundredfold, and that inertia lagged the wrench 9 degrees behind the
+    hands.
 
-    It records what would break a real tap: the side load (the side spring's force, smoothed over ``side_filter``
-    s), the tilt (deg) and the axial load. ``turns`` is the net clockwise turn (turns); ``snapped`` names the first
-    limit passed (``side_limit`` N, ``tilt_limit`` deg, ``axial_limit`` N), or is None."""
+    WHY a lean that stays (2026-11-12, review of the first version): a tap that is cut in while it leans cuts its
+    thread leaning, and the tap then stands in it at that lean, which an engineer's square shows after the trial.
+    Whenever the tap cuts new thread (turns further in than ever before), the thread's axis moves towards the tap's
+    axis by the share ``cut / follow_turns`` of the angle between them. ``lean`` (deg) is the thread's angle from
+    the vertical; ``lean_max`` the most it reached. ``turns`` is the net clockwise turn (turns). No force limits:
+    nothing here snaps or strips."""
 
     body: str
     origin: tuple[float, float, float]
@@ -259,18 +264,15 @@ class Thread:
     c_tilt: float = 0.1
     k_stick: float = 100.0
     c_spin: float = 0.6
-    side_limit: float = 8.0
-    side_filter: float = 0.1
-    tilt_limit: float = 2.0
-    axial_limit: float = 60.0
-    dt: float = 1.0 / 240.0
+    follow_turns: float = 0.1
     turns: float = field(init=False, default=0.0)
-    side: float = field(init=False, default=0.0)
-    side_max: float = field(init=False, default=0.0)
+    tilt: float = field(init=False, default=0.0)
     tilt_max: float = field(init=False, default=0.0)
-    axial_max: float = field(init=False, default=0.0)
-    snapped: str | None = field(init=False, default=None)
+    lean: float = field(init=False, default=0.0)
+    lean_max: float = field(init=False, default=0.0)
+    axis: np.ndarray = field(init=False, default=None)
     _ccw: float = field(init=False, default=0.0)
+    _deepest: float = field(init=False, default=0.0)
     _heading: float | None = field(init=False, default=None)
     _anchor: float = field(init=False, default=0.0)
 
@@ -279,24 +281,35 @@ class Thread:
         return (self.body,)
 
     def clear(self) -> None:
-        self.turns = self.side = self.side_max = self.tilt_max = self.axial_max = self._ccw = 0.0
-        self.snapped, self._heading, self._anchor = None, None, 0.0
+        self.turns = self.tilt = self.tilt_max = self.lean = self.lean_max = self._ccw = self._deepest = 0.0
+        self.axis = np.array([0.0, 0.0, 1.0])
+        self._heading, self._anchor = None, 0.0
 
     def update(self, fr: dict, acc: dict) -> None:
         f = fr[self.body]
+        if self.axis is None:
+            self.clear()
         heading = math.atan2(f.rot[1, 0], f.rot[0, 0])
         if self._heading is None:
             self._heading = heading
         self._ccw += (heading - self._heading + math.pi) % (2 * math.pi) - math.pi
         self._heading = heading
         self.turns = -self._ccw / (2 * math.pi)
+        up = f.rot[:, 2]
+        # new thread cut: the thread's axis follows the tap's
+        if self.turns > self._deepest:
+            share = min(1.0, (self.turns - self._deepest) / self.follow_turns)
+            self._deepest = self.turns
+            a = self.axis + share * (up - self.axis)
+            self.axis = a / np.linalg.norm(a)
+            self.lean = math.degrees(math.acos(float(np.clip(self.axis[2], -1.0, 1.0))))
+            self.lean_max = max(self.lean_max, self.lean)
         o = np.asarray(self.origin, float)
         z_target = o[2] - self.pitch * self.turns
         off = f.pos - o
         f_side = np.array([-self.k_side * off[0] - self.c_side * f.vel[0], -self.k_side * off[1] - self.c_side * f.vel[1], 0.0])
         f_axial = np.array([0.0, 0.0, -self.k_axial * (f.pos[2] - z_target) - self.c_axial * f.vel[2]])
         _wrench(acc, self.body, f, f_side + f_axial, f.pos)
-        up = f.rot[:, 2]
         zhat = np.array([0.0, 0.0, 1.0])
         spin_z = float(f.spin[2])
         spin_tilt = f.spin - spin_z * zhat
@@ -309,20 +322,9 @@ class Thread:
             self._anchor = self._ccw - self.torque_out / self.k_stick
         t_turn = -self.k_stick * (self._ccw - self._anchor) - self.c_spin * spin_z
         _, t = acc.setdefault(self.body, [np.zeros(3), np.zeros(3)])
-        t += self.k_tilt * np.cross(up, zhat) - self.c_tilt * spin_tilt + t_turn * zhat
-        side = float(np.linalg.norm(f_side))
-        self.side += (side - self.side) * min(1.0, self.dt / self.side_filter)
-        tilt = math.degrees(math.acos(float(np.clip(up[2], -1.0, 1.0))))
-        axial = abs(float(f_axial[2]))
-        self.side_max, self.tilt_max = max(self.side_max, self.side), max(self.tilt_max, tilt)
-        self.axial_max = max(self.axial_max, axial)
-        if self.snapped is None:
-            if self.side > self.side_limit:
-                self.snapped = f"side load {self.side:.1f} N"
-            elif tilt > self.tilt_limit:
-                self.snapped = f"tilt {tilt:.1f} deg"
-            elif axial > self.axial_limit:
-                self.snapped = f"axial load {axial:.0f} N (thread stripped)"
+        t += self.k_tilt * np.cross(up, self.axis) - self.c_tilt * spin_tilt + t_turn * zhat
+        self.tilt = math.degrees(math.acos(float(np.clip(float(up @ self.axis), -1.0, 1.0))))
+        self.tilt_max = max(self.tilt_max, self.tilt)
 
 
 # -- tilted grips for yam_arena.demo waypoints --------------------------------------------------------------------

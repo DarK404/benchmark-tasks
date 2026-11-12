@@ -36,13 +36,15 @@ def fresh(monkeypatch):
     yield
 
 
-def run(*turns, moving=False):
-    """Score the trial frame by frame through the given turn counts; returns the last (score, success)."""
+def run(*turns, moving=False, hold=M.STILL_STEPS):
+    """Score the trial frame by frame through the given turn counts, then the last one ``hold`` more times, calling
+    success() then score() each frame as the run does; returns the last (score, success)."""
     out = None
-    for t in turns:
+    for t in list(turns) + [turns[-1]] * hold:
         M.THREAD.turns = t
         f = {"wrench": wrench(moving, t), "block": None}
-        out = (M.score(f), M.success(f))
+        ok = M.success(f)
+        out = (M.score(f), ok)
     return out
 
 
@@ -73,8 +75,19 @@ def test_backing_off_before_the_quarter_turn_does_not_count():
     assert run(0.0, 0.20, 0.05, 0.26) == (0.5, False)
 
 
-def test_still_moving_is_not_success_yet():
-    assert run(0.0, 0.27, 0.15, moving=True) == (1.0, False)
+def test_still_moving_is_not_full_yet():
+    assert run(0.0, 0.27, 0.15, moving=True) == (0.5, False)
+
+
+def test_full_only_after_a_second_still():
+    assert run(0.0, 0.27, 0.15, hold=M.STILL_STEPS - 2)[0] == 0.5
+    assert run(0.15, hold=1)[0] == 1.0  # the 20th still step in a row
+
+
+def test_moving_again_restarts_the_second():
+    run(0.0, 0.27, 0.15, hold=M.STILL_STEPS - 2)
+    run(0.15, moving=True, hold=0)
+    assert run(0.15, hold=M.STILL_STEPS - 2)[0] == 0.5
 
 
 def test_a_gripper_still_on_the_wrench_is_half(monkeypatch):
@@ -91,21 +104,21 @@ def test_grippers_just_clear_are_full(monkeypatch):
     assert run(0.0, 0.27, 0.15) == (1.0, True)
 
 
-# -- violations latch --------------------------------------------------------------------------------------------
+# -- a crooked thread -------------------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("why", ["side load 7.5 N", "tilt 2.4 deg", "axial load 70 N (thread stripped)"])
-def test_a_snapped_tap_scores_zero_for_good(why):
-    run(0.0, 0.10)
-    M.THREAD.snapped = why
-    assert run(0.27, 0.15) == (0.0, False)
+@pytest.mark.parametrize("lean, full", [(2.5, False), (1.9, True)])
+def test_a_crooked_thread_scores_zero(lean, full):
+    M.THREAD.lean = lean
+    assert run(0.0, 0.27, 0.15) == ((1.0, True) if full else (0.0, False))
 
 
-def test_reset_clears_the_latch():
-    M.THREAD.snapped = "side load 7.5 N"
-    run(0.1)
+def test_reset_clears_the_lean_and_the_count():
+    M.THREAD.lean = 3.0
+    run(0.0, 0.27, 0.15)
     M.THREAD.clear()
     M._reset_state()
+    assert M._STATE["still"] == 0 and M.THREAD.lean == 0.0
     assert run(0.0, 0.27, 0.15) == (1.0, True)
 
 
@@ -155,32 +168,33 @@ def test_turning_in_pulls_the_tap_down_one_pitch_per_turn():
     assert acc["w"][0][2] == pytest.approx(-t.k_axial * 0.0015, rel=1e-6)  # still at the start height: pulled down
 
 
-def test_a_steady_side_load_snaps_the_tap():
-    t = thread(side_limit=5.0, k_side=5000.0, side_filter=0.1, dt=1 / 240)
-    for _ in range(240):  # 1.5 mm off the axis: 7.5 N sideways, held 1 s
-        t.update(frame(off=(0.0015, 0.0, 0.0)), {})
-    assert t.snapped and t.snapped.startswith("side load")
+def test_a_tap_cut_square_leaves_a_square_thread():
+    t = thread(follow_turns=0.1)
+    for yaw in range(-5, -95, -5):
+        t.update(frame(float(yaw)), {})
+    assert t.lean == pytest.approx(0.0, abs=1e-6)
 
 
-def test_a_brief_side_knock_does_not_snap_it():
-    t = thread(side_limit=5.0, k_side=5000.0, side_filter=0.1, dt=1 / 240)
-    for _ in range(5):  # 7.5 N for 20 ms
-        t.update(frame(off=(0.0015, 0.0, 0.0)), {})
-    for _ in range(240):
-        t.update(frame(), {})
-    assert t.snapped is None
+def test_cut_while_leaning_the_thread_takes_on_the_lean():
+    t = thread(follow_turns=0.1)
+    for yaw in range(-2, -92, -2):  # a quarter turn in, the tap leaning 3 degrees all the way
+        t.update(frame(float(yaw), tilt_deg=3.0), {})
+    assert 2.5 < t.lean < 3.0 + 1e-6  # mostly taken on: 1 - exp(-2.5) of it
 
 
-def test_tilt_snaps_the_tap():
-    t = thread(tilt_limit=2.0)
-    t.update(frame(tilt_deg=2.5), {})
-    assert t.snapped and t.snapped.startswith("tilt")
+def test_leaning_without_cutting_leaves_the_thread_square():
+    t = thread(follow_turns=0.1)
+    t.update(frame(-30.0), {})  # cut 30 degrees square
+    for yaw in (-20.0, -10.0, -25.0, -30.0):  # back out and in again, leaning, within the thread already cut
+        t.update(frame(yaw, tilt_deg=4.0), {})
+    assert t.lean == pytest.approx(0.0, abs=1e-6)
 
 
-def test_a_hard_pull_strips_the_thread():
-    t = thread(axial_limit=60.0, k_axial=5000.0)
-    t.update(frame(off=(0.0, 0.0, 0.02)), {})  # 20 mm up: 100 N
-    assert t.snapped and "stripped" in t.snapped
+def test_the_tap_is_pulled_back_along_the_thread():
+    t = thread(k_tilt=6.0)
+    acc = {}
+    t.update(frame(tilt_deg=2.0), acc)  # leaning 2 degrees about x, not cutting
+    assert acc["w"][1][0] == pytest.approx(-6.0 * math.sin(math.radians(2.0)), rel=1e-6)
 
 
 # -- the demo ----------------------------------------------------------------------------------------------------
