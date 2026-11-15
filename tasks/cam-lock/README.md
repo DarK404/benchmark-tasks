@@ -88,7 +88,7 @@ Evaluated every control step; the score at the end of the episode counts (`SCORE
   that follow lock nothing: 0.
 - `force`: the same, but the shelf is shoved on hard (about 12 N at each bolt): it still stops 9 mm short, 0.
 
-Offline checks of the model, every tier and the demo: `python -m pytest -q test_cam_lock.py` (27 tests, no simulator).
+Offline checks of the model, every tier and the demo: `python -m pytest -q test_cam_lock.py` (28 tests, no simulator).
 
 ## Runtime and seeds
 
@@ -115,18 +115,22 @@ The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
     chamfered mouths guide a blade's tip into its 9 mm hole from 6 mm. The cams are drawn by bodies the model turns.
 - **Geometry.** Rigid bodies built from boxes: the shelf (0.5 kg, friction 0.4) and the screwdrivers (0.12 kg, round
   handles, friction 1.0); the side, the jig and the holders fixed.
-- **Real sizes**: Minifix-type 15 mm cams in 15 mm bores, drilling distance B = 24 mm (the cam's middle 24 mm in from
-  the edge) with the connecting bolts made for B = 24 mm, whose heads reach the cam's middle; PH2 × 100 screwdrivers. The side is cut down
+- **Real sizes**: Häfele Minifix 15 housings in 15 mm bores, drilling distance B = 24 mm (the cam's middle 24 mm in
+  from the edge), with Minifix S100 bolts for B = 24 mm (7 mm heads, in 8 mm edge holes), whose heads reach the cam's
+  middle; PH2 × 100 screwdrivers (the housings take a PZ2/PH2 cross-slot driver). The side is cut down
   to 12 cm tall so that the hands turning the screwdrivers stay above it.
 
 ## Real-world build
 
-- A 16 mm white melamine particleboard side (32 x 12 cm) clamped upright in a jig, with two Minifix-type connecting
-  bolts for drilling distance B = 24 mm (M6 thread, in 8 mm holes; about 25 mm out of the face to the head's end) and
-  two 8 mm beech dowels in its face.
-- A 16 mm melamine shelf (26 x 20 cm) with two 15 mm zinc cam housings in 15 mm bores in its top face, their middles
-  24 mm in from the joining edge, and 8 mm edge holes for the bolts and dowels (a standard Minifix drilling jig for
-  B = 24/34 sets all of these).
+- A 16 mm white melamine particleboard side (32 x 12 cm) clamped upright in a jig. In its face: two connecting bolts,
+  Häfele Minifix S100, part no. 262.27.949 (zinc-plated steel, M6 thread 7.5 mm long screwed into threaded inserts in
+  the face, 7 mm head, drilling distance B = 24 mm: the head's middle stands 24 mm out of the face), and two 8 mm
+  beech dowels.
+- A 16 mm melamine shelf (26 x 20 cm). In its top face: two Häfele Minifix 15 connector housings for 16 mm panels,
+  part no. 262.25.533 (zinc alloy, 15 mm across, in 15 mm bores 12.5 mm deep), their middles 24 mm in from the
+  joining edge. In its joining edge: two 8 mm bolt holes, 8 mm below the top face (the housing's dimension A), which
+  the 7 mm bolt heads pass with 0.5 mm to spare all round, running into the housings' bores; and two 8 mm dowel
+  holes. A Häfele Minifix drilling jig 24/34 (part no. 001.25.010) sets all of these.
 - Two PH2 x 100 screwdrivers in drilled wooden holders.
 
 Positions are in `task.json`.

@@ -48,8 +48,12 @@ PANEL_T = 16.0 * MM
 SIDE_W, SIDE_H = 0.32, 0.12
 BOLT_Y = (-0.09, 0.09)  # the connecting bolts (right, left), at the shelf's mid-thickness
 DOWEL_Y = (-0.115, 0.115)
-BOLT_LEN = 25.0 * MM  # out of the face to the head's end
-SHANK_R, HEAD_R, HEAD_L = 3.5 * MM, 5.0 * MM, 5.0 * MM
+# The connecting bolt: Haefele Minifix S100, part 262.27.949 (M6 thread, 7 mm head, for an 8 mm bolt hole, drilling
+# distance B = 24 mm). WHY (2026-11-14, review): a 10 mm head could not enter the 8 mm edge hole. The head's middle
+# stands 24 mm out of the face, where the cam's middle comes with the joint shut.
+BOLT_HOLE = 8.0 * MM  # the holes in the shelf's joining edge
+SHANK_R, HEAD_R, HEAD_L = 2.5 * MM, 3.5 * MM, 5.0 * MM
+BOLT_LEN = 24.0 * MM + HEAD_L / 2  # out of the face to the head's end
 DOWEL_R, DOWEL_OUT = 4.0 * MM, 12.0 * MM
 
 
@@ -96,7 +100,7 @@ def _shelf_shapes() -> tuple[list, list]:
     solid = [box((0.0, 0.0, 0.0), (SHELF_D, SHELF_W, t), MELAMINE)]
     seen = []
     for (cx, cy), y in zip(CAM_XY, BOLT_Y):  # the holes in the joining edge, and the cams' bores round the cams
-        seen.append(box((HALF + 0.1 * MM, y, 0.0), (0.2 * MM, 2 * SHANK_R + 1.0 * MM, 2 * SHANK_R + 1.0 * MM), DARK))
+        seen.append(box((HALF + 0.1 * MM, y, 0.0), (0.2 * MM, BOLT_HOLE, BOLT_HOLE), DARK))
         seen += prism12((cx, cy, t / 2 + 0.05 * MM), CAM_R + 0.6 * MM, 0.1 * MM, CHIPBOARD)
     for y in DOWEL_Y:
         seen.append(box((HALF + 0.1 * MM, y, 0.0), (0.2 * MM, 2 * DOWEL_R, 2 * DOWEL_R), CHIPBOARD))

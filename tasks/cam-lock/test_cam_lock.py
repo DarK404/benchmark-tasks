@@ -235,7 +235,11 @@ def test_shoved_onto_closed_cams_scores_nothing():
 
 
 def test_the_cam_reaches_the_bolts_head():
-    assert abs(M.CAM_IN - (M.BOLT_LEN - M.HEAD_L / 2)) < M.CAM_R / 2
+    assert abs(M.CAM_IN - (M.BOLT_LEN - M.HEAD_L / 2)) < 0.5 * MM
+
+
+def test_the_bolts_head_passes_the_edge_hole():
+    assert 2 * M.HEAD_R < M.BOLT_HOLE and M.BOLT_HOLE < M.PANEL_T
 
 
 def test_nothing_done_scores_nothing():
