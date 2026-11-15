@@ -111,18 +111,27 @@ took 4.1 minutes. The layout is fixed (`-E object_jitter=0`); there are no seeds
   fingers pressed on both grips as the handles open.
 - **Geometry.** Rigid bodies built from boxes: the riveter (0.36 kg head and fixed handle, 0.06 kg sprung handle on a
   PhysX hinge) with 3 cm wide grips, friction 1.0; the strips, block, holder, holster and tray fixed. The rivets,
-  stems and the set rivet's tail are drawn by bodies the model moves. The rivets are drawn at their real size (8 mm shank,
-  18.5 mm of mandrel standing above the head).
+  stems and the set rivet's tail are drawn by bodies the model moves. The rivets are drawn at the real part's size (8 mm sleeve,
+  10.1 x 2.0 mm head, 3.05 mm mandrel, 18 mm of it standing above the head).
 - **Arms.** The simulated arms are soft and sag about 8 mm under the riveter; the demo allows for that and for how
   the riveter hangs between the fingers (it hangs a few millimetres off, and shifts as the handles are pumped).
 
 ## Real-world build
 
 Two aluminium strips (120 x 30 x 1.5 mm) with a 4.9 mm hole, clamped on a drilled wooden block; a plier-type hand
-riveter with a 4.8 mm nosepiece in a wooden holster; two 4.8 x 8 mm dome-head blind rivets in a drilled wooden holder
-(aluminium body, zinc-plated steel mandrel; 9.5 mm head, 8 mm shank, mandrel 2.7 mm across and 28 mm long overall;
-for a 4.9 mm hole). The 8 mm is the shank's length; the rivet's rated grip range, the material thickness it joins, is
-2.0 to 3.5 mm, and the two strips make 3.0 mm. A small steel tray. Positions are in `task.json`.
+riveter with a 4.8 mm nosepiece in a wooden holster; a small steel tray; and two blind rivets in a drilled wooden
+holder:
+
+- **Würth art. no. 51458488**, "Blind rivet, open, with break mandrel, ISO 15981, dome head, aluminium/aluminium",
+  4.8 x 8 mm: aluminium sleeve and aluminium mandrel, head 10.1 mm across and 2.0 mm high, mandrel 3.05 mm across,
+  drill hole 4.9 mm (4.9 to 5.0).
+- Its documented **grip range is 2.5 to 4.0 mm**; the two 1.5 mm strips make 3.0 mm. (The 8 mm is the sleeve's
+  length under the head, not the grip.)
+- Tool action: set with any hand riveter with a 4.8 mm nosepiece; an aluminium mandrel breaks at a lower pull than a
+  steel one. The mandrel's length is not in the listing; the simulation draws 18 mm of it above the head, enough for
+  the nosepiece to take.
+
+Positions are in `task.json`.
 
 ## Reset between trials
 

@@ -58,12 +58,14 @@ WORK = body("work", pos=(*WORK_XY, TOP), friction=0.6, shapes=[
 # -- the rivets, stem up in their holder ---------------------------------------------------------------------------
 HOLDER_XY = (0.21, -0.05)
 HOLDER_H = 20.0 * MM
-# A 4.8 x 8 mm dome-head blind rivet, aluminium body, zinc-plated steel mandrel: 9.5 mm head, 8 mm shank, rated grip
-# 2.0-3.5 mm (the two 1.5 mm strips make 3.0 mm), for a 4.9 mm hole; mandrel 2.7 mm across, 28 mm long overall.
+# The rivet: Wuerth art. no. 51458488, an open blind rivet with break mandrel to ISO 15981, dome head, aluminium sleeve
+# and aluminium mandrel: 4.8 x 8 mm, head 10.1 mm across and 2.0 mm high, mandrel 3.05 mm across, for a 4.9 mm hole,
+# rated grip range 2.5-4.0 mm (the two 1.5 mm strips make 3.0 mm).
 # WHY 8 mm (2026-11-12, review): a 12 mm shank is the length for a 6-8 mm grip, not this 3 mm stack.
-HEAD_T, HEAD_R, SHANK_R, SHANK_L = 1.5 * MM, 4.75 * MM, 2.4 * MM, 8.0 * MM
-STEM_R, STEM_L = 1.35 * MM, 28.0 * MM - HEAD_T - SHANK_L  # the stem above the head (the rest runs through the shank)
-GRIP_RANGE = (2.0 * MM, 3.5 * MM)
+# WHY this part (2026-11-14, review): a named part whose documented grip range can be checked.
+HEAD_T, HEAD_R, SHANK_R, SHANK_L = 2.0 * MM, 5.05 * MM, 2.4 * MM, 8.0 * MM
+STEM_R, STEM_L = 1.525 * MM, 18.0 * MM  # the mandrel above the head (the rest runs through the shank)
+GRIP_RANGE = (2.5 * MM, 4.0 * MM)
 RIVET_DY = (-8.0 * MM, 8.0 * MM)
 HOLDER = body("rivet_holder", pos=(*HOLDER_XY, TOP), friction=0.6, shapes=[
     box((0.0, 0.0, HOLDER_H / 2), (0.03, 0.04, HOLDER_H), WOOD)])
@@ -72,20 +74,20 @@ HIDDEN_Z = TOP - 0.30
 
 def _rivet(k: int):
     """A 4.8 mm aluminium blind rivet (its frame at the top of its domed head): the head, the hollow shank, and its
-    steel stem (mandrel) running up through it, with the ball end that upsets the shank in the shank's end."""
+    aluminium stem (mandrel) running up through it, with the ball end that upsets the shank in the shank's end."""
     head = (HOLDER_XY[0], HOLDER_XY[1] + RIVET_DY[k], TOP + HOLDER_H + HEAD_T)
     shapes = [
         *prism12((0.0, 0.0, -HEAD_T + 0.35 * MM), HEAD_R, 0.7 * MM, ALU),  # the domed head, in three steps
         *prism12((0.0, 0.0, -HEAD_T + 0.95 * MM), HEAD_R * 0.8, 0.5 * MM, ALU),
         *prism12((0.0, 0.0, -0.2 * MM), HEAD_R * 0.55, 0.4 * MM, ALU),
         *prism12((0.0, 0.0, -HEAD_T - SHANK_L / 2), SHANK_R, SHANK_L, ALU),
-        *prism12((0.0, 0.0, -HEAD_T - SHANK_L - 0.6 * MM), STEM_R * 1.25, 1.2 * MM, STEEL),  # the mandrel's ball
+        *prism12((0.0, 0.0, -HEAD_T - SHANK_L - 0.6 * MM), STEM_R * 1.25, 1.2 * MM, ALU),  # the mandrel's ball
     ]
     rivet = body(f"rivet{k}", pos=head, mass=1e-3, inertia=(1e-8, 1e-8, 1e-8), shapes=shapes,
                  visual_only=tuple(range(len(shapes))))
     stem_shapes = [
-        *prism12((0.0, 0.0, STEM_L / 2), STEM_R, STEM_L, STEEL),
-        *prism12((0.0, 0.0, 0.4 * MM), STEM_R * 1.12, 0.8 * MM, STEEL),  # the break neck's ring
+        *prism12((0.0, 0.0, STEM_L / 2), STEM_R, STEM_L, ALU),
+        *prism12((0.0, 0.0, 0.4 * MM), STEM_R * 1.12, 0.8 * MM, ALU),  # the break neck's ring
     ]
     stem = body(f"stem{k}", pos=head, mass=1e-3, inertia=(1e-8, 1e-8, 1e-8), shapes=stem_shapes,
                 visual_only=tuple(range(len(stem_shapes))))
