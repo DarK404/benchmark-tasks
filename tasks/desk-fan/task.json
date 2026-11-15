@@ -1,0 +1,24 @@
+{
+  "title": "Put a table fan back together after washing: blade on its pin, spinner screwed on with the blade held, grille clipped",
+  "category": "Impact on jobs",
+  "keywords": [
+    "table fan",
+    "household appliance",
+    "housekeeping",
+    "cleaning",
+    "assembly",
+    "bimanual",
+    "left-hand thread",
+    "keyed fit",
+    "clips"
+  ],
+  "instruction": "Put the fan back together.",
+  "context": "Fans gather dust on their blade and grilles; makers tell owners to take the grilles and blade off, wash them, and put the fan back together when dry. It is done in homes, offices, hotels and care homes, as part of deep cleaning, following the manual: the blade onto the shaft until the shaft's retaining pin fits its notch, the spinner screwed on anticlockwise (a left-hand thread) until tight while the blade is held still (the shaft turns freely), the front grille onto the rear grille with its clips closed over the rim. Done by: maids and housekeeping cleaners (O*NET 37-2012.00), janitors and cleaners (37-2011.00), and the fans' owners.",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed: a cotton towel (40 x 40 cm) at x 27, y 0; on it a Midea FT30-8MB 12-inch table fan (switched off, unplugged) lying on its back, face up, its motor shaft pointing up at x 27, y 0, its pillar and base lying behind it (towards +x): the motor housing (white plastic, 12 cm across) on its back, the rear grille on with its plastic nut tight and its handle towards +x, its rim 33.6 cm across and 10.5 cm up; the steel shaft (8 mm) ends 12.2 cm up, its retaining pin across it along x, 10.4 cm up. Loose, washed and dry: the blade (light blue plastic three-blade propeller, 30 cm across, hub 4 cm across and 1.8 cm deep with the notch for the pin across its back, 60 g) lying flat, face up, at x 32, y 36, one blade pointing to -y; the spinner (white plastic knob, 4 cm across, 1.5 cm tall, left-hand thread, 10 g) standing on its base at x 13, y -22; the front grille (plastic rim 33.6 cm across with four clips at 45, 135, 225 and 315 degrees, open, a wire dome rising 2.4 cm to a 6 cm badge, 120 g) lying dome up at x 32, y -36, one clip pointing to +x +y. Part sizes are estimates (Midea publishes none).",
+  "scoring": "Checked by looking at the fan at the end. 1.0 if the blade is on the shaft with the pin in its notch, the spinner is screwed down tight (it turns no further anticlockwise), the front grille sits on the rear grille with all four clips closed over the rim, and no part of either gripper is within 1 cm of the spinner or the front grille, both still (under 1 cm/s) for 1 s; 0.5 if the blade is on and the spinner tight but the front grille is not on or a clip is open (or a hand is still on it); 0.25 if the blade is on its pin but the spinner is not on or not tight; else 0 (for example the blade on the shaft but off the pin). Order does not matter, but the grille covers the spinner.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Open the front grille's four clips and lift it off; unscrew the spinner clockwise; lift the blade off the shaft. Lay the blade, the front grille and the spinner back as in the setup. Nothing is consumed.",
+  "fidelity": "Our model: the blade set on the shaft square, on axis, notch at the pin (either way round) goes on; the spinner set on the shaft's end screws down 1.5 mm a turn, tight after one turn anticlockwise, only while the other hand holds a blade (else the shaft turns with it); the front grille set on lined up sits on once the spinner is tight; a clip closes when a finger presses its end. Parts once on are drawn by us. Sizes estimated. Boxes.",
+  "scores": "Dream-1 run: 0.0 (the arms reach over the fan: the left hand knocks the blade askew and the right hovers over the front grille, but nothing is put on the fan); demo: 1.0 (success at step 1,702)",
+  "media": "M-2RAY4R"
+}
