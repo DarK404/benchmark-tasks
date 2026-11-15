@@ -103,9 +103,20 @@ def test_lid_set_down_flat_and_let_go_is_full_score():
     assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table())) == (1.0, True)
 
 
-def test_lid_paint_side_down_on_the_table_is_half():
+def test_lid_paint_side_down_on_the_table_scores_zero():
     pried()
-    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(tilt=0.0))) == (0.5, False)
+    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(tilt=0.0))) == (0.0, False)
+
+
+def test_lid_laid_paint_side_down_then_turned_over_still_scores_zero():
+    pried()
+    run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(tilt=0.0)), hold=0)
+    assert run(objs(lid_on_table())) == (0.0, False)
+
+
+def test_lid_held_paint_side_down_above_the_table_is_half():
+    pried()
+    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(tilt=0.0, low_z=M.TOP + 0.03))) == (0.5, False)
 
 
 def test_lid_still_moving_is_not_full_yet():
@@ -141,9 +152,9 @@ def test_fingers_just_beyond_20_mm_are_clear(monkeypatch):
     assert run(*frames) == (1.0, True)
 
 
-def test_lid_tilted_on_the_table_is_half():
+def test_lid_paint_side_up_but_tilted_on_the_table_is_half():
     pried()
-    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(tilt=25.0))) == (0.5, False)
+    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(tilt=155.0))) == (0.5, False)
 
 
 def test_lid_propped_against_the_tin_is_half():

@@ -77,20 +77,21 @@ Evaluated every control step; the score at the end of the episode counts (`SCORE
 
 | Score | Condition | How to check on a real table |
 |---|---|---|
-| 0 | at any point: the tin tilted more than 15 degrees, moved more than 3 cm from its start, or the tin or the lid fell off the table (more than 2 cm below its top); or the screwdriver's blade never went into the groove between the lid and the rim | video |
+| 0 | at any point: the tin tilted more than 15 degrees, moved more than 3 cm from its start, or the tin or the lid fell off the table (more than 2 cm below its top), or the lid was laid paint side down on the table (resting on it with its underside within 45 degrees of facing down: the wet paint is on the table); or the screwdriver's blade never went into the groove between the lid and the rim | video |
 | 1.0 | the lid lies flat on the table (its lowest point within 5 mm of it, turned over, paint side up, within 10 degrees of flat), its edge at least 5 mm clear of the tin, no part of either gripper within 2 cm of it, and the lid and the tin still (moving under 1 cm/s) for 1 s | ruler, top photo (the lid's plug ring, on its underside, shows when it is paint side up) |
-| 0.5 | the lid is off the tin (its centre more than 4 cm from the tin's axis) but not as for 1.0: propped against the tin, tilted on the table, lying paint side down, still held, or not yet still for 1 s | ruler, photo |
+| 0.5 | the lid is off the tin (its centre more than 4 cm from the tin's axis) but not as for 1.0: propped against the tin, tilted on the table paint side up, still held, or not yet still for 1 s | ruler, photo |
 | 0.25 | the lid is still on the tin, but lifted out of the rim round at least half its edge (in simulation: 6 of the 12 seal catches freed) | 1 mm feeler gauge under the lid's edge |
 | 0 | anything else | |
 
-The violations latch: a tin tipped over and stood back up, or pushed away and back, still scores 0. `score()` gives
+The violations latch: a tin tipped over and stood back up, or pushed away and back, still scores 0, and so does a lid
+laid paint side down and then turned over. `score()` gives
 1.0 only once the full-score state has held, still and let go, for 1 s (until then 0.5). The groove check
 makes the lid have to be levered, not pulled or knocked off; the blade passing through the groove on its way under
 the lid's edge is what it records. A scripted check without the tool (`TIN_DEMO=pinch`: the left gripper reaches into
 the groove, closes on the sealed lid and pulls up) lifted and tipped the whole tin by 20 degrees while the lid stayed
 sealed: score 0.
 
-Offline checks of every tier, latch and edge case: `python -m pytest -q test_paint_tin.py` (40 tests, no simulator).
+Offline checks of every tier, latch and edge case: `python -m pytest -q test_paint_tin.py` (42 tests, no simulator).
 
 ## Runtime and seeds
 

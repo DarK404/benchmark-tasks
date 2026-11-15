@@ -243,6 +243,16 @@ def blade_in_groove(screwdriver, tin) -> bool:
     return bool(GROOVE_R[0] <= r <= GROOVE_R[1] and GROOVE_Z[0] <= tip[2] <= GROOVE_Z[1])
 
 
+PAINT_DOWN_DEG = 45.0  # the lid's underside facing the table: within this of lying as it sat on the tin
+
+
+def paint_side_down_on_table(lid, tin) -> bool:
+    """The lid off the tin and resting on the table with its underside, wet with paint, facing down (latched: the paint
+    is on the table). WHY (2026-11-15, review): a lid laid paint side down must score zero."""
+    off_r = float(np.hypot(*(lid.to_world((0.0, 0.0, LID_T / 2))[:2] - tin.pos[:2])))
+    return bool(off_r > LID_OFF_R and lid.low[2] < TOP + LID_ON_TABLE and lid.tilt_deg() < PAINT_DOWN_DEG)
+
+
 def _update(objects) -> tuple[float, bool]:
     """(score, full score with everything still). Latches the tool use and the violations."""
     lid, tin, tool = objects["lid"], objects["tin"], objects["screwdriver"]
@@ -255,6 +265,8 @@ def _update(objects) -> tuple[float, bool]:
             _STATE["violation"] = "tin moved"
         elif min(tin.low[2], lid.low[2]) < TOP - FELL:
             _STATE["violation"] = "fell off the table"
+        elif paint_side_down_on_table(lid, tin):
+            _STATE["violation"] = "lid paint side down on the table"
     _STATE["tool_in_groove"] |= blade_in_groove(tool, tin)
     if _STATE["violation"] or not _STATE["tool_in_groove"]:
         return 0.0, False
