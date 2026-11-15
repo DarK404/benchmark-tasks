@@ -1,0 +1,24 @@
+{
+  "title": "Put a nebulizer back together after cleaning: top clicked in with the tank held, cap, mouthpiece, tube, into its stand",
+  "category": "Impact on jobs",
+  "keywords": [
+    "nebulizer",
+    "home health",
+    "nursing",
+    "medical device",
+    "assembly",
+    "bimanual",
+    "push fit",
+    "click lock",
+    "tubing"
+  ],
+  "instruction": "Put the nebulizer together, ready for the next treatment.",
+  "context": "Nebulizer treatments for asthma, COPD and croup are given every day at home and in care homes; after each one the kit is taken apart, washed and dried, then put back together for the next, following the maker's instructions: the inhalation top into the medication tank by its tab and turned clockwise to the click, the cap on its air inlet, the mouthpiece on, the air tube onto the nozzle under the tank. Done by: home health and personal care aides (O*NET 31-1120.00), nursing assistants (31-1131.00), nurses (29-1141.00, 29-2061.00), respiratory therapists (29-1126.00).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed: an Omron CompAIR NE-C801 compressor (white plastic, 142 x 98 x 72 mm, 270 g) at x 37, y -15, its air connector on its front face at y -10, 3 cm up, with its 100 cm PVC air tube (Omron NEB-TP-L10E, 6.5 mm across) pushed on and lying in rows on the table in front of it, its free end (a cuff) at x 13, y -8, pointing to +y; a wooden kit stand (a pine fork, prongs 5.5 cm up, open underneath) at x 17.5, y 8; a silicone drying mat (11 x 12 cm, 3 mm) at x 26.5, y 3.5. Loose: the Omron V.V.T. Nebulizer Kit N-01 (NEB-NEST3-81E), washed, dried and empty: its medication tank standing in the stand (its notch towards +x); its inhalation top standing on the mat at x 24.5, y 0.5 (its outlet 40 degrees left of +x, its tab towards +x); its cap at x 24.5, y 6; the mouthpiece (Omron NEB-MP-E) lying on the mat along x, its mouth at x 27, y 5.5. The kit's parts are polypropylene, about 30 g together; their sizes are estimates (the maker publishes none): tank 44 mm across, top 40 mm, cap 16 mm, mouthpiece 65 mm.",
+  "scoring": "Checked by looking at the kit at the end. 1.0 if the inhalation top is locked in the tank (turned clockwise to the click, its tab at the tank's lock mark), the cap is on the air inlet, the mouthpiece on the outlet, the tube's cuff on the nozzle under the tank, and the kit stands upright in its stand (within 10 degrees), no part of either gripper within 1 cm of the kit, the kit still (under 1 cm/s) for 1 s; 0.5 if all of that is put together but the kit is not back upright in its stand (or a hand is still on it, or it is not yet still); 0.25 if the top is locked in the tank but the cap, the mouthpiece or the tube is not on; else 0 (for example the top set in but not turned to the click). Order does not matter.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Pull the tube's cuff off the nozzle and lay the tube in rows in front of the compressor. Take the mouthpiece and cap off, turn the top anticlockwise and lift it out, lay the top, cap and mouthpiece on the mat as in the setup, and stand the tank in the stand with its notch towards +x. Nothing is consumed.",
+  "fidelity": "Our model: the top set on the tank square and by its tab drops in; turned clockwise by one hand while the other holds the tank it clicks at 40 degrees (turned alone, nothing changes); the cap, mouthpiece and tube cuff pushed onto their spigots square and on axis go on and are drawn by us. The tube is 25 ball-jointed 4 cm links. Kit sizes estimated; parts once on weigh nothing (the tank carries the kit's 45 g). No medicine, no air flow. Boxes.",
+  "scores": "Dream-1 run: 0.0 (the left hand moves over the stand and the right over the coiled tube, but nothing is picked up or put together); demo: 1.0 (success at step 1,296)",
+  "media": "M-DB53ZN"
+}
