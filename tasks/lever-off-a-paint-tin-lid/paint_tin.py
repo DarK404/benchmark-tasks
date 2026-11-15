@@ -4,7 +4,7 @@ cannot be pinched; between the lid's edge and the rim there is a narrow groove w
 screwdriver stands upright, tip down, in a wooden stand 17 cm in front of the right arm, 3 cm in from it.
 
 Run it:  inspect-robots run --embodiment yam_arena -E task=paint_tin.py -E object_jitter=0 -E control_hz=20 \\
-           --instruction "Open the paint tin: lever its lid off with the screwdriver and put the lid on the table." \\
+           --instruction "Open the paint tin: lever its lid off with the screwdriver and put the lid on the table, paint side up." \\
            --scorer task_score ...
 """
 
@@ -189,7 +189,8 @@ SEAL = tinkit.add_seal(Seal(lid="lid", tin="tin", points=12, radius=25.0 * MM, l
 
 
 # -- scoring -------------------------------------------------------------------------------------------------------
-# 1.0   the lid lies flat on the table (its lowest point within 5 mm of it, tilted under 10 degrees), at least 5 mm
+# 1.0   the lid lies flat on the table turned over, paint side up (its lowest point within 5 mm of it, within 10
+#       degrees of flat), at least 5 mm
 #       clear of the tin, no part of either gripper within 20 mm of it, lid and tin still (under 1 cm/s) for 1 s
 # 0.5   the lid is off the tin (its centre more than 40 mm, the tin's radius, from the tin's axis), not as for 1.0
 # 0.25  the lid is on the tin but loose round at least half its rim (6 of the 12 seal catches freed)
@@ -197,7 +198,7 @@ SEAL = tinkit.add_seal(Seal(lid="lid", tin="tin", points=12, radius=25.0 * MM, l
 #       between the lid and the rim (the lid must be levered, not pulled or knocked off), the tin tilted over 15
 #       degrees, the tin moved over 30 mm from its start, the tin or the lid fell below the table top.
 SCORE_OVER = "end"
-RUN_LIMIT_STEPS = 2400  # task.json run_limit: 2 minutes at 20 Hz; the demo takes about 48 s
+RUN_LIMIT_STEPS = 2400  # task.json run_limit: 2 minutes at 20 Hz; the demo takes about 67 s
 LID_CORNER_R = LID_R / math.cos(math.radians(15))  # the 12-gon's corner radius: 31.6 mm
 LID_CLEAR = 5.0 * MM  # lid's edge to the tin's side, on the table
 LID_ON_TABLE = 5.0 * MM  # lid's lowest point above the table top
@@ -258,7 +259,8 @@ def _update(objects) -> tuple[float, bool]:
     if _STATE["violation"] or not _STATE["tool_in_groove"]:
         return 0.0, False
     off_r = float(np.hypot(*(lid.to_world((0.0, 0.0, LID_T / 2))[:2] - tin.pos[:2])))
-    flat = min(lid.tilt_deg(), 180.0 - lid.tilt_deg()) < LID_FLAT_DEG
+    # paint side up: the lid turned over, its underside (wet with paint) facing up, so no paint goes on the table
+    flat = 180.0 - lid.tilt_deg() < LID_FLAT_DEG
     on_table = flat and lid.low[2] < TOP + LID_ON_TABLE and off_r >= TIN_R + LID_CORNER_R + LID_CLEAR
     if on_table and fingers_to_lid(lid) >= FINGERS_CLEAR:
         return 1.0, bool(lid.resting() and tin.resting())
@@ -512,10 +514,73 @@ def lift_lid_off() -> list:
         Waypoint(0.8, (x, y, tcp), FINGER_ON_LID, "pinch the lid", g),
         Waypoint(1.5, (x, y, tcp + 0.06), FINGER_ON_LID, "lift the lid out", g),
         Waypoint(0.5, (x, y, tcp + 0.06), FINGER_FIRM_ON_LID, "grip the lid firmly", g),
-        Waypoint(2.0, (dx, dy, tcp + 0.06), FINGER_FIRM_ON_LID, "carry the lid", g),
-        Waypoint(2.5, (dx, dy, put), FINGER_FIRM_ON_LID, "lower the lid", g),
-        Waypoint(0.8, (dx, dy, put), FINGER_OPEN, "let go of the lid", g),
-        Waypoint(1.0, (dx, dy, TOP + 0.12), FINGER_OPEN, "up from the lid", g),
+        *stand_lid_up(tcp + 0.06),
+    ]
+
+
+# WHY the lid is turned over (2026-11-14, review): laid down as it comes off, its underside, wet with paint, goes onto
+# the table. A painter lays it paint side up.
+E = __import__("os").environ
+# One hand cannot do it (2026-11-14, sim traces): the gripper cannot point above level, so it cannot carry the lid
+# past upright (stood on its edge at 88 degrees it fell back); the pads hold the lid's flats too well for it to pivot
+# between them; and swung over within the per-step limits it leaves the fingers at 52 degrees turning 120 deg/s, and
+# falls back. So the hands pass it over, as a person does: the left stands it upright, the right takes it from above
+# by its faces like a plate, and tilting to level lays it on its back.
+HAND_Y = 0.11  # where the hands meet (the right reaches this far across; the left points level from here to y 0.20)
+HAND_Z = 0.075  # the upright lid's middle above the table
+FLIP_BACK = 12.6 * MM  # measured in simulation: the carried lid's middle beyond the left TCP along its axis
+HAND_X = 0.17 + FLIP_BACK  # the upright lid's plane: the left TCP on the one line (x 0.17) where it can point level
+PLATE_IN = 7.5 * MM  # the right fingertips this far below the upright lid's top edge: clear of its plug ring
+PLATE = tilted(0.0, math.pi / 2, -math.pi / 2)  # the right hand straight down, its fingers closing along x
+PLATE_OPEN = -12.0 * MM  # a 24 mm gap to come down either side of the lid
+LAY_XY = (0.17, float(E.get("TIN_LAY_Y", "-0.13")))  # the right TCP as it lays the lid down, level
+TOOL_DOWN = float(E.get("TIN_TOOL_DOWN", "0.03"))  # the parked screwdriver lowered this far before it is let go
+LAY_Z = float(E.get("TIN_LAY_Z", "0.06"))  # ...this far above the table (its gripper stands 10 cm tall, on edge)
+
+
+def stand_lid_up(carry_z: float) -> list:
+    """Left: carry the lid to the meeting place and stand it upright, its top face to the robot."""
+    down, level = tilted(0.0, math.pi / 2), tilted(0.0, 0.0)
+    return [
+        Waypoint(2.5, (HAND_X, HAND_Y, carry_z), FINGER_FIRM_ON_LID, "carry the lid", down),
+        Waypoint(2.5, (HAND_X - FLIP_BACK, HAND_Y, TOP + HAND_Z), FINGER_FIRM_ON_LID, "stand the lid up", level),
+    ]
+
+
+def left_gives() -> list:
+    level = tilted(0.0, 0.0)
+    at = (HAND_X - FLIP_BACK, HAND_Y, TOP + HAND_Z)
+    up = (at[0], at[1], at[2] + 0.055)
+    return [Waypoint(1.2, at, FINGER_PINCH_OPEN, "let the other hand have it", level),
+            Waypoint(1.2, up, FINGER_PINCH_OPEN, "up past the lid", level)]
+
+
+def left_leaves() -> list:
+    return [Waypoint(2.0, (0.20, 0.20, TOP + 0.15), FINGER_PINCH_OPEN, "away", tilted(0.0, math.pi / 2))]
+
+
+def right_takes() -> list:
+    """Right: down over the upright lid's top edge, a finger either side, and close on its faces."""
+    z = TOP + HAND_Z + LID_R - PLATE_IN + PAD_TIP_PAST_TCP
+    return [
+        Waypoint(2.5, (0.17, -0.12, TOP + 0.14), PLATE_OPEN, "turn the hand", PLATE),
+        Waypoint(2.5, (HAND_X, HAND_Y, z + 0.02), PLATE_OPEN, "over the upright lid", PLATE),
+        Waypoint(1.5, (HAND_X, HAND_Y, z), PLATE_OPEN, "a finger either side", PLATE),
+        Waypoint(1.2, (HAND_X, HAND_Y, z), FINGER_CLOSED, "take it by its faces", PLATE),
+    ]
+
+
+def right_lays_down() -> list:
+    z = TOP + HAND_Z + LID_R - PLATE_IN + PAD_TIP_PAST_TCP
+    x, y = LAY_XY
+    level = tilted(0.0, 0.0, -math.pi / 2)
+    return [
+        Waypoint(1.0, (HAND_X, HAND_Y, z + 0.02), FINGER_CLOSED, "lift it", PLATE),
+        Waypoint(2.5, (x, y, TOP + 0.13), FINGER_CLOSED, "carry it over", PLATE),
+        Waypoint(2.5, (x, y, TOP + LAY_Z), FINGER_CLOSED, "tilt it paint side up", level),
+        Waypoint(1.6, (x, y, TOP + LAY_Z), PLATE_OPEN, "let go of the lid", level),
+        Waypoint(1.5, (x, y, TOP + 0.13), PLATE_OPEN, "up", PLATE),
+        Waypoint(1.5, (0.16, -0.22, TOP + 0.15), PLATE_OPEN, "home", PLATE),
     ]
 
 
@@ -600,9 +665,28 @@ def demo():
     out = withdraw_waypoints(PRY_AT, PRY_P0, PRY_P1, shift=TURN_SHIFT)
     left += lift[:LID_GRIP_AT] + [wait(_t(out[:1]) + 0.3, lift[LID_GRIP_AT - 1], "hold the lid")] + lift[LID_GRIP_AT:]
     right += out
-    right.append(Waypoint(1.5, park.pos, FINGER_CLOSED, "park again", park.yaw))
+    # the right hand lays the screwdriver down, then takes the lid from the left and lays it paint side up
+    down_at = (park.pos[0], park.pos[1], park.pos[2] - TOOL_DOWN)
+    right += [Waypoint(1.5, park.pos, FINGER_CLOSED, "park again", park.yaw),
+              Waypoint(1.5, down_at, FINGER_CLOSED, "lay the screwdriver down", park.yaw),
+              Waypoint(1.6, down_at, FINGER_OPEN, "let go of it", park.yaw),
+              Waypoint(1.2, (down_at[0], down_at[1], TOP + 0.16), FINGER_OPEN, "up from it", park.yaw)]
+    take = right_takes()
+    if _t(left) > _t(right) + _t(take[:2]):
+        right.append(wait(_t(left) - _t(right) - _t(take[:2]), right[-1], "wait for the lid"))
+    else:
+        left.append(wait(_t(right) + _t(take[:2]) - _t(left), left[-1], "hold the lid up"))
+    right += take
+    left.append(wait(_t(right) - _t(left), left[-1], "hold the lid up"))
+    left += left_gives()
+    right.append(wait(_t(left) - _t(right) + 0.2, right[-1], "it is handed over"))
+    lay = right_lays_down()
+    right += lay
+    # WHY the left hand waits above (2026-11-15, sim trace): leaving at once, it knocked the lid out of the right hand
+    left.append(wait(_t(lay[:2]) + 0.2, left[-1], "wait above"))
+    left += left_leaves()
     if _t(left) > _t(right):
-        right.append(wait(_t(left) - _t(right), right[-1], "hold the screwdriver"))
+        right.append(wait(_t(left) - _t(right), right[-1], "done"))
     else:
         left.append(wait(_t(right) - _t(left), left[-1], "done"))
     return {"right": right, "left": left}

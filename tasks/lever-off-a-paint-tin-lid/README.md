@@ -5,7 +5,8 @@ rolled edge, so there is no edge to take hold of; between the lid and the rolled
 screwdriver stands tip down in a wooden block. The robot must pick up the screwdriver, put its blade into the groove
 and under the lid's edge, and lever the lid up by pivoting the blade on the rim. One pry frees only part of the seal,
 and one arm can pry only a short arc of the rim, so the other hand turns the tin between pries, as a person does.
-Once the lid is loose all round, the robot lifts it off and puts it on the table.
+Once the lid is loose all round, the robot lifts it off and lays it on the table turned over, paint side up, so
+that the wet paint on its underside does not go onto the table.
 
 Repainting a room is one of the most common jobs people do at home, and it starts here: a paint tin's lid has no
 edge to grip, and the familiar way to open it is a flat screwdriver levered against the rim, a little at a time round
@@ -32,7 +33,7 @@ folder:
 ```bash
 inspect-robots run --embodiment yam_arena --policy dream \
   -E task=paint_tin.py -E object_jitter=0 -E control_hz=20 -E cam_width=320 -E cam_height=176 \
-  --instruction "Open the paint tin: lever its lid off with the screwdriver and put the lid on the table." \
+  --instruction "Open the paint tin: lever its lid off with the screwdriver and put the lid on the table, paint side up." \
   --scorer task_score --max-steps 2400 --store-frames --log-dir ~/yam-eval/paint-tin-dream
 ```
 
@@ -43,7 +44,7 @@ inspect-robots run --embodiment yam_arena --policy dream \
 ```bash
 inspect-robots run --embodiment yam_arena --policy yam_scripted \
   -E task=paint_tin.py -E object_jitter=0 -E control_hz=20 -E cam_width=320 -E cam_height=176 \
-  --instruction "Open the paint tin: lever its lid off with the screwdriver and put the lid on the table." \
+  --instruction "Open the paint tin: lever its lid off with the screwdriver and put the lid on the table, paint side up." \
   --scorer task_score --max-steps 2400 --store-frames --log-dir ~/yam-eval/paint-tin-demo
 ```
 
@@ -57,10 +58,17 @@ The demo is open loop: it uses only the fixed layout, never the simulator's inte
    It then eases the blade down 4 degrees so the lid settles level on the rim.
 4. The left hand pinches the loose lid by two opposite flats, gently at first. The blade is drawn out only once the
    lid is held: pulled out from under a loose lid, it dragged the lid onto the rim.
-5. The left hand lifts the lid 6 cm, grips it firmly, carries it 15 cm to the left of the tin, sets it down flat and
-   lets go.
+5. The right hand lays the screwdriver down. The left hand lifts the lid 6 cm, grips it firmly, carries it clear of
+   the tin and stands it upright, its top face towards the robot.
+6. The lid is turned over by passing it between the hands, as a person does. The right hand comes down over the
+   upright lid's top edge, a finger either side, and takes it by its faces like a plate; the left lets go and moves
+   up out of the way. The right hand carries the lid to its own side and tilts from pointing down to level, which
+   lays the lid on its back, and lets it go 6 cm above the table: it lands flat, paint side up.
 
-The demo reaches 1.0 (success) in 1,030 steps (51.5 s). No step of it is clamped by the run's delta-limit guard
+   One hand cannot turn the lid over: the gripper cannot point above level, so it cannot carry the lid past upright,
+   and the lid does not pivot between the pads.
+
+The demo reaches 1.0 (success) in 1,345 steps (67.3 s). No step of it is clamped by the run's delta-limit guard
 (the gripper may change by at most 5% of its range per step); `test_paint_tin.py` checks every step against it.
 
 ## Scoring
@@ -70,8 +78,8 @@ Evaluated every control step; the score at the end of the episode counts (`SCORE
 | Score | Condition | How to check on a real table |
 |---|---|---|
 | 0 | at any point: the tin tilted more than 15 degrees, moved more than 3 cm from its start, or the tin or the lid fell off the table (more than 2 cm below its top); or the screwdriver's blade never went into the groove between the lid and the rim | video |
-| 1.0 | the lid lies flat on the table (its lowest point within 5 mm of it, tilted under 10 degrees, either face up), its edge at least 5 mm clear of the tin, no part of either gripper within 2 cm of it, and the lid and the tin still (moving under 1 cm/s) for 1 s | ruler, top photo |
-| 0.5 | the lid is off the tin (its centre more than 4 cm from the tin's axis) but not as for 1.0: propped against the tin, tilted on the table, still held, or not yet still for 1 s | ruler, photo |
+| 1.0 | the lid lies flat on the table (its lowest point within 5 mm of it, turned over, paint side up, within 10 degrees of flat), its edge at least 5 mm clear of the tin, no part of either gripper within 2 cm of it, and the lid and the tin still (moving under 1 cm/s) for 1 s | ruler, top photo (the lid's plug ring, on its underside, shows when it is paint side up) |
+| 0.5 | the lid is off the tin (its centre more than 4 cm from the tin's axis) but not as for 1.0: propped against the tin, tilted on the table, lying paint side down, still held, or not yet still for 1 s | ruler, photo |
 | 0.25 | the lid is still on the tin, but lifted out of the rim round at least half its edge (in simulation: 6 of the 12 seal catches freed) | 1 mm feeler gauge under the lid's edge |
 | 0 | anything else | |
 
@@ -88,8 +96,8 @@ Offline checks of every tier, latch and edge case: `python -m pytest -q test_pai
 
 Measured on an L40S. The simulation runs about 3.5 times slower than real time (about 6 control steps a second:
 each step has 12 physics substeps with 32 solver iterations for the thin parts, the seal model and three cameras).
-The demo trial (1,030 steps, 51.5 s of simulated time) took 3.3 minutes of wall-clock time, about 15 s of it Isaac
-Sim's start-up; the Dream-1 trial (the full 2,400 steps, 2 minutes simulated) took 7.0 minutes. The layout is fixed (`-E object_jitter=0`); there are no seeds to choose. The demo reached success at the same
+The demo trial (1,345 steps, 67.3 s of simulated time) took 4.8 minutes of wall-clock time, about 15 s of it Isaac
+Sim's start-up; the Dream-1 trial (the full 2,400 steps, 2 minutes simulated) took 7.5 minutes. The layout is fixed (`-E object_jitter=0`); there are no seeds to choose. The demo reached success at the same
 step in a development harness and under `inspect-robots run`.
 
 ## Fidelity

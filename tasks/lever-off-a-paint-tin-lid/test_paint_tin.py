@@ -44,7 +44,8 @@ def lid_on_tin():
     return tinkit.body_state(M.LID, (*M.TIN_XY, M.TOP + M.SEAT_TOP), _quat(), np.zeros(3), np.zeros(3))
 
 
-def lid_on_table(xy=(0.24, 0.13), tilt=0.0, low_z=None, moving=False):
+def lid_on_table(xy=(0.24, 0.13), tilt=180.0, low_z=None, moving=False):
+    """Lying on the table; by default turned over, paint side up (tilt 180)."""
     return _state(M.LID, xy, M.TOP if low_z is None else low_z, tilt=tilt, moving=moving)
 
 
@@ -102,9 +103,9 @@ def test_lid_set_down_flat_and_let_go_is_full_score():
     assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table())) == (1.0, True)
 
 
-def test_lid_upside_down_on_the_table_counts_as_flat():
+def test_lid_paint_side_down_on_the_table_is_half():
     pried()
-    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(tilt=180.0))) == (1.0, True)
+    assert run(objs(lid_on_tin(), tool=TOOL_IN_GROOVE), objs(lid_on_table(tilt=0.0))) == (0.5, False)
 
 
 def test_lid_still_moving_is_not_full_yet():
