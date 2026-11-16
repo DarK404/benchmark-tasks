@@ -1,0 +1,23 @@
+{
+  "title": "Thread a new cord through a table lamp's pipe, leaving about 3 inches out of the top for the socket",
+  "category": "Societal relevance",
+  "keywords": [
+    "lamp",
+    "rewiring",
+    "lamp cord",
+    "household repair",
+    "deformable",
+    "cable feeding",
+    "bimanual",
+    "regrasping"
+  ],
+  "instruction": "Thread the new cord through the lamp, leaving about 3 inches out of the top.",
+  "context": "Replacing a lamp's cord is one of the commonest household electrical repairs: a frayed, cracked or chewed lamp cord is a shock and fire hazard, and the fix is a new cord fed through the lamp and wired to the socket. It is done at home and by handymen and maintenance staff. The cord goes in at the bottom of the lamp's hollow centre pipe and is fed up it until it comes out of the threaded top; about 3 inches is left out there for the knot and the socket, the rest runs out of the base to the plug.",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed (taped): a column table lamp lying on its side, its axis along y at x 30, 3 cm up: a white ceramic column 6 cm across and 27.6 cm long with a Westinghouse 7027200 1/8 IP all-thread lamp pipe (zinc-plated steel, 3/8 in outside, 12-1/16 in long, 7.6 mm bore) through its axis, from its bottom end at y -15.3 (flush with the felted base) to its threaded top at y +15.3, which stands 3 cm out of the column's neck; socket, harp and old cord off. Loose: the new lamp cord (Southwire 49908744 18/2 SPT-1, brown, 2.8 x 5.5 mm, about 20 g/m) lying straight on the table along the pipe's line at x 30, its end 3 cm short of the pipe's bottom end (at y -18.3) and cut to a point, the cord running back along -y to the table's edge (8 ft long; the end 50 cm modelled).",
+  "scoring": "Checked with a rule at the end. 1.0 if the cord runs through the pipe and its end stands 60 to 100 mm (about 3 in) out of the pipe's top, no part of either gripper within 1 cm of the cord, the cord out of the pipe still, for 1 s; 0.5 if the cord is through the pipe and its end out of the top but shorter or longer than that (or a hand is still on it, or it is not yet still); 0.25 if its end is at least half way up the pipe but not out of the top; else 0 (the cord not in the pipe or only just into it, or laid past the lamp instead of through it).",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Pull the cord back out of the pipe from the base and lay it straight on the table along the pipe's line, its end 3 cm from the base. Nothing is consumed.",
+  "fidelity": "The cord is 42 links of 12 mm (2.8 x 5.5 mm) joined by bending joints (no stretch or twist; bending sprung at 0.01 N m/rad each, our estimate of lamp cord's stiffness), slightly damped, 0.5 g each (twice real for stability); its end cut to a point over 5 mm. The pipe is a 12-sided 7.6 mm bore (the maker gives none); the lamp is fixed. Friction 0.3, chosen. Socket, harp and plug not modelled. Boxes.",
+  "scores": "Dream-1 run: 0.0 (the arms move over the lamp and the cord, but the cord is not picked up); demo: 1.0 (success at step 1,796)",
+  "media": "M-NAJUCK"
+}
