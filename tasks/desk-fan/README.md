@@ -4,9 +4,10 @@ A 12-inch table fan lies on its back on a towel, face up, after cleaning: its re
 points up. Its washed blade lies on the left, its front grille on the right, its spinner on the table in front of
 the right hand. The robot must put the fan back together.
 
-Fans gather dust on their blade and grilles, and makers tell owners to take the grilles and blade off and wash them,
-then put the fan back together when dry. It is done in homes, offices, hotels and care homes, by housekeepers and
-cleaners as part of deep cleaning, and by the fans' owners. Putting it back together follows the maker's manual:
+This is a familiar household chore. Table and desk fans are among the commonest household appliances, and they
+gather dust on their blade and grilles; their manuals tell owners to take the front grille, the spinner and the
+blade off, wash them, and put the fan back together when dry, which most fan owners do whenever it gets dusty, often
+before the summer. Putting it back together follows the maker's manual:
 
 - **The blade goes onto the shaft** until the shaft's retaining pin fits the notch in its hub. Off the pin, the blade
   slips on the shaft.
