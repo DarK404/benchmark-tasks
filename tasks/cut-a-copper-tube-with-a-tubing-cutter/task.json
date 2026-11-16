@@ -1,0 +1,23 @@
+{
+  "title": "Cut a copper tube through with a screw-feed tubing cutter: a quarter turn a lap, never dented, offcut off",
+  "category": "Impact on jobs",
+  "keywords": [
+    "plumbing",
+    "HVAC",
+    "copper tube",
+    "tubing cutter",
+    "tool use",
+    "feed control",
+    "bimanual",
+    "regrasping"
+  ],
+  "instruction": "Cut the copper tube through with the tubing cutter, and take the offcut off.",
+  "context": "Cutting copper tube to length with a tubing cutter is daily work for plumbers, pipefitters and steamfitters (O*NET 47-2152, about 0.5 million workers) and HVAC mechanics and installers (49-9021, about 0.4 million). The maker's procedure: with the wheel on the mark and just touching, turn the feed screw about a quarter turn, take the cutter right round the tube, and tighten a quarter turn each lap until the tube parts. Fed much more at once, the wheel crushes the tube out of round instead of cutting it, and a dented end will not take a fitting.",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed: a tube stand centred at x 24, y 0: a 12 x 12 x 1.8 cm plywood block, a 1/2 in malleable-iron floor flange (7.3 cm across) screwed to it, a 1/2 in FIP x 1/2 in compression brass adapter in the flange, its nut gripping a length of 1/2 in Type L copper tube (ASTM B88: 15.88 mm outside, 1.02 mm wall) that stands upright from 7 cm to 14 cm above the table, a pen mark round it 10 cm up. On the tube: a RIDGID No. 10 screw-feed tubing cutter (32910; grey die-cast body about 15 x 3.6 x 3.8 cm, 0.8 lb, red feed knob 2.5 cm across and 3.5 cm long, 7/16-14 feed screw), its body level and centred on the mark, its wheel on the mark just touching the tube (finger-snug), its knob pointing to the robot's right (the knob's end at x 24, y -13).",
+  "scoring": "Checked at the end with calipers (and knife-edge caliper jaws for the groove). Dent, latched for the whole trial, scoring 0: the wheel fed more than half a turn of the feed screw (0.91 mm) past the groove under it (on a real tube: the outside diameter beside the cut differs by more than 0.3 mm between any two directions). Otherwise 1.0 if the tube is cut through all round, the offcut is off the stub and resting on the board or the table, no part of either gripper is within 1 cm of the cutter or the offcut, and both are still, for 1 s; 0.5 if the tube is cut through (the offcut still on the stub or in a hand); 0.25 if the groove is at least 0.45 mm deep all round (the groove-bottom diameter 14.98 mm or less everywhere); else 0.",
+  "run_limit": "3,000 steps (2.5 minutes at 20 Hz)",
+  "reset_notes": "Loosen the adapter's nut and take out the stub with its ferrule; push in a new 7 cm length of tube with a new 1/2 in compression ferrule (brass sleeve) so it stands 7 cm out of the nut, tighten the nut, mark it 3 cm above the nut (10 cm above the table); open the cutter, put it on at the mark with the knob to the right and tighten the knob until the wheel just touches. The tube (7 cm a trial) and the ferrule are consumed.",
+  "fidelity": "Our cutting model: the cutter turns on the tube against a rolling resistance (0.25 N m s/rad, our estimate); its knob turns as a fingertip pressed on its top rolls across it (no slip), feeding the wheel 1.81 mm a turn; as the wheel passes round, it cuts each of 72 sectors to its depth, up to the wall; the dent rule is our proxy (twice the maker's quarter turn). Cutting and knob forces are not modelled. The offcut is held until cut through. Boxes and cylinders.",
+  "scores": "Dream-1 run: 0.0 (the right hand reaches over the tube and the cutter and hovers there, the left arm stays by its base; nothing is cut); demo: 1.0 (success at step 2,057)",
+  "media": "M-NNZLEL"
+}
