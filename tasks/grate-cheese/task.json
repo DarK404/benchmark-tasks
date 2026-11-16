@@ -1,0 +1,24 @@
+{
+  "title": "Grate about 20 g of cheese into a dish on a flat grater, fingers never on the blades",
+  "category": "Societal relatability",
+  "keywords": [
+    "grating",
+    "cheese",
+    "kitchen",
+    "cooking",
+    "tool use",
+    "pressure control",
+    "quantity",
+    "bimanual",
+    "hand safety"
+  ],
+  "instruction": "Grate about 20 g of the cheese into the dish.",
+  "context": "Grating cheese is one of the commonest home cooking tasks. A flat paddle grater is laid across a dish and steadied by its handle while the cheese is pushed along the blades, pressing, away from the handle (it cuts on the push). The amount grated depends on the pressure and the length of the strokes, so getting about what the recipe asks for means judging them; and the fingers holding the cheese come closer to the blades as the block wears down, so the stroke has to stay above them (grated knuckles are a familiar kitchen injury).",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed (taped): a 20 cm round glass dish, 4.5 cm deep, centred at x 30, y -2; a wooden cutting board 25 x 15 cm, 1.2 cm thick, centred at x 17, y -20. Loose: a Microplane Professional coarse paddle grater, item 38000 (stainless steel, 13 x 2-5/8 in, grating surface 5-1/4 x 2-5/16 in, about 110 g) lying across the dish along y at x 30, its grating surface's middle at y -2.6, its tip end on the rim at the robot's right and its black handle to the robot's left over the far rim; half of a Tillamook sharp cheddar 8 oz block (70 x 57 x 29 mm, about 113 g, cold) lying flat on the board at its middle, its 70 mm length along y.",
+  "scoring": "Checked with a kitchen scale and by looking at the end. 1.0 if 15 to 25 g of cheese is grated into the dish (the dish weighed before and after), the cheese is back on its board, the grater still on the dish, no part of either gripper within 1 cm of the cheese, the cheese and grater still, for 1 s; 0.5 if 5 g or more is grated but outside 15 to 25 g, or the cheese is not back on the board (or a hand is still on it); 0.25 if some is grated, under 5 g; else 0. Latched for the whole trial, scoring 0: a gripper finger within 3 mm of the blades over the grating surface, or the grater off the dish (moved over 5 cm or tipped over 20 degrees).",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Empty the dish and weigh it; put a fresh half block on the board as in the setup (the cheese is consumed: each trial starts with a full 29 mm thick half block, so an 8 oz block serves two trials); lay the grater back across the dish.",
+  "fidelity": "Grating is our own model: the cheese's underside bears on the grating surface through springs at 25 points (the grater takes the opposite forces; friction 0.5); pushed towards the grater's tip while pressed, the block loses cheese by Archard's wear law (8e-6 m3/N/m, about 2.3 g a stroke at 9 N, our estimate). The block is drawn worn from below and a shred pile rises in the dish. Steel on glass friction 0.2. Boxes.",
+  "scores": "Dream-1 run: 0.0 (the right hand moves over the dish and the board and nudges the cheese, but grates nothing); demo: 1.0 (success at step 922)",
+  "media": "M-J9756S"
+}
