@@ -1,0 +1,24 @@
+{
+  "title": "Fit a kerf-in weatherstrip into a door's head jamb: both ends flush, the fin pressed home all along",
+  "category": "Impact on jobs",
+  "keywords": [
+    "carpentry",
+    "door repair",
+    "weatherstrip",
+    "kerf",
+    "deformable",
+    "insertion",
+    "alignment",
+    "bimanual",
+    "building maintenance"
+  ],
+  "instruction": "Fit the weatherstrip into the head jamb's kerf, its ends flush with the jamb's ends.",
+  "context": "Kerf-in weatherstrip (a foam bulb on a barbed fin pushed into a saw kerf in the door stop) is the standard seal on exterior door frames in the US. It is fitted when a frame is made up or repaired and replaced when it wears or tears, a routine door repair for carpenters (O*NET 47-2031, about 0.7 million workers: build or repair doors and frameworks; install frames and fixtures) and general maintenance and repair workers (49-9071, about 1.5 million: repair doors). The makers' procedure: cut the strip square to the jamb's length, put its end flush at the corner, then, starting at that end, press it firmly into the kerf along the whole length; do not stretch it. Once a fin is in, its barbs hold it where it is, so the ends must be lined up first; a strip pushed along while it is pressed bunches and overhangs at the far end, and one that is short or overhangs leaves a gap at the corner where air and water get in.",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed (double-sided carpet tape): a Pease Doors exterior head jamb for a 32 in door (SKU TJH324, primed treated poplar, 4-9/16 in deep, 1-1/4 in thick with the stop, 3/4 in without) lying on its back along y, centred at x 30, y 0: 81.3 cm long (y -40.65 to +40.65), 11.6 cm deep (x 24.2 to 35.8); its rabbet floor 1.9 cm up, 4.8 cm wide, on the robot's side (x 24.2 to 29.0); the stop beyond it, 1.27 cm higher (x 29.0 to 35.8), its face at x 29.0 facing the robot, with the kerf for 1/8 in weatherstrip (3.2 mm wide, 9.5 mm deep) along its whole length, centred 6.35 mm above the rabbet floor. Loose: a Pemko Q102BL foam kerf-in weatherstrip (black; bulb 5/8 in, 15.9 mm, out from the stop, 12.7 mm thick; fin 9.5 mm long), cut square to 81.3 cm from a 36 in length (about 25 g), lying loose on the rabbet floor along y, on its side with its fin pointing to the kerf, not pressed in: the bulb's back at x 25.9, the fin's tip 6 mm short of the stop's face; slid 2 cm to the right, so that its right-hand end overhangs the jamb's right-hand end by 2 cm (its ends at y -42.65 and +38.65).",
+  "scoring": "Checked at the end with a 1.5 mm feeler leaf and a rule. A link (one 24 mm length of the strip, 34 in all) is home when its fin is at least 8 mm into the kerf (the 1.5 mm leaf does not enter between the bulb's base and the stop's face there). 1.0 if the strip is home along its whole length and both cut ends are within 2 mm of the jamb's ends (no gap, no overhang, over 2 mm), no part of either gripper within 1 cm of the strip, and the strip still, for 1 s; 0.5 if at least 90% of it (31 links) is home, but not all, or an end is off by more than 2 mm (or a hand is still on it, or it is not yet still); 0.25 if at least 25% (9 links) is home; else 0 (for example the strip pressed against the stop's face but its fin not in the kerf).",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Pull the strip out of the kerf from one end, lay it back loose on the rabbet floor as in the setup (its fin's tip 6 mm from the stop's face, its right-hand end 2 cm past the jamb's end: a pencil tick on the table marks where). The strip is reused; replace it with a new length when its fin's barbs no longer hold in the kerf.",
+  "fidelity": "Our kerf model: a length of strip whose fin is pushed at least 8 mm into the kerf is held there, fully home and in line (the barbs); partly inserted fins are guided by the simulator's contacts but not held. The force needed to push the fin in is not modelled (the real strip needs a firm press; no maker publishes a figure). The strip: 34 bend-jointed links of 23.9 mm (no stretch or twist; bending 0.01 N m/rad), 25 g, both our estimates. Friction 0.5, chosen. Boxes.",
+  "scores": "Dream-1 run: 0.0 (both hands reach over the jamb's ends and hover there, then draw back towards the arm bases; no length of the strip is pressed home); demo: 1.0 (success at step 1,242)",
+  "media": "M-XAAVKY"
+}
