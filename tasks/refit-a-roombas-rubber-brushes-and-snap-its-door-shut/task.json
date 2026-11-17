@@ -1,0 +1,22 @@
+{
+  "title": "Refit a Roomba's two rubber brushes, each peg in its matching drive socket, and snap the cleaning head's door shut",
+  "category": "Societal relatability",
+  "keywords": [
+    "household",
+    "robot vacuum",
+    "maintenance",
+    "shape matching",
+    "snap fit",
+    "articulated parts",
+    "bimanual"
+  ],
+  "instruction": "Refit both brushes in the robot vacuum's cleaning head and close its door.",
+  "context": "Robot vacuums are in tens of millions of homes, and their makers tell owners to take the brushes out and clear the hair from them regularly. iRobot's care steps for the Roomba e, i and j series: remove the brushes, clear the hair from their square and hex pegs and the grey bearings, then put them back, matching the shape of each brush's peg to the shape on the cleaning head, and close the cleaning head's door. A brush whose peg is not in its socket does not turn; an unlatched door lets the brushes fall out.",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed: an iRobot Roomba i3 robot vacuum (34 cm across, 9.2 cm tall, about 3.4 kg) upside down, centred at x 27, y 0, its cleaning head across it along y: an opening 13.2 cm front to back (x 22.8 to 36.0) and 25.2 cm long, with two brush seats, the front one (axis at x 25.8) with a yellow square drive socket and the rear one (axis at x 30.4) with a green hex drive socket, their sockets at y +11.1 (the +y end), their axes 7.5 cm above the table, and a grey bearing cradle for each at the -y end; its door (13.6 x 25 cm, grey) hinged along the opening's rear edge, resting open at 110 degrees. Loose, lying on the table along y, drive ends towards +y: the square-peg brush (black rubber, green fins; 3 cm across, 21.5 cm long, 1 cm square peg, grey bearing cap; about 60 g) at x 24, y -30, and the hex-peg brush (the same with an 11 mm hex peg) at x 24, y +30.",
+  "scoring": "Checked at the end. A brush is seated when its peg is through the matching drive socket and its bearing cap is down in its cradle: within 1.5 mm across its axis and 2 degrees of seated, and between 5 mm short of the drive's end stop and home along it. 1.0: both brushes seated in the seats that match their pegs, the door shut (within 2 degrees) with both catches sprung home under the frame's lip, no part of either gripper within 1 cm of the brushes or the door, everything still, for 1 s. 0.5: both brushes seated, the door not latched (or a hand on it, or not yet still). 0.25: one brush seated. 0: anything else (for example a brush in the wrong seat, which its peg does not fit).",
+  "run_limit": "1,800 steps (1.5 minutes at 20 Hz)",
+  "reset_notes": "Open the door (press its tab to release the catches and lift it back to its stop), take both brushes out (lift each bearing end, draw the peg out of its socket) and lay them back on the table at the marked spots, drive ends towards +y. Nothing is consumed.",
+  "fidelity": "All contact, no rules: each drive socket is a plate with a square or hex hole (0.8 / 1.2 mm play) and a sloped mouth, which the other brush's peg does not fit; the bearing cradles are open-topped notches; the door is hinged and its two catches are sprung hooks that ride over the frame's lip and spring under it (1 N preload, 1000 N/m). The inner shapes and the peg sizes are our estimates. Boxes.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0 (success at step 1,075)",
+  "media": "M-ZTMW74"
+}
