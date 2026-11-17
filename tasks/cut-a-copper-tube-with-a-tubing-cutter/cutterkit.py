@@ -235,6 +235,8 @@ class Hinge:
     target: float = 0.0
     lower: float | None = None  # rad
     upper: float | None = None
+    max_torque: float | None = None  # N m: caps the drive's torque. With a high ``damping`` this makes the joint a
+    # Coulomb friction (it holds still against less, and slips against more), solved implicitly by PhysX
 
 
 @dataclass(frozen=True)
@@ -537,6 +539,8 @@ def _author_hinge(stage, prim_path: str, h: "Hinge") -> None:
     drive.CreateDampingAttr(float(h.damping) * math.pi / 180.0)
     drive.CreateTargetPositionAttr(math.degrees(h.target))
     drive.CreateTargetVelocityAttr(0.0)
+    if h.max_torque is not None:
+        drive.CreateMaxForceAttr(float(h.max_torque))
 
 
 @dataclass(frozen=True)
@@ -894,23 +898,23 @@ def install() -> None:
 class TubeCut:
     """A screw-feed tubing cutter on an upright tube.
 
-    ``cutter`` turns on the tube (a hinge about the tube's axis). Its feed knob is part of the cutter's body, on the
-    cutter's x axis from ``knob_x[0]`` to ``knob_x[1]`` (radius ``knob_r``; for contact a slippery box with a flat top
-    at the knob's top, so a fingertip stays on top as it would on the turning knob): it turns as a fingertip pressed
-    on its top rolls across it (no slip): a fingertip moving along the cutter's +y over the top
-    turns it clockwise seen from its end, which feeds the wheel in by ``pitch`` a turn. At the start the wheel just
-    touches the tube. ``knob`` is a body drawn turning with it (no collision). The groove's depth is kept in ``bins``
-    sectors round the tube: as the cutter turns, the wheel cuts each sector it passes down to the wheel's depth (at
-    most the ``wall``). The bite is how far the wheel is fed past the groove under it; over ``dent`` (m) the wheel
-    crushes the tube out of round (latched). Once every sector is cut through, the ``offcut`` (held in place by the
-    model until then) is let go. Runs every ``stride``-th physics substep.
+    ``cutter`` turns on the tube (a hinge about the tube's axis, with the cutting resistance as a Coulomb friction);
+    ``knob`` turns on the cutter about the cutter's x axis (the feed screw, pointing out from the tube; its hinge
+    resists with the screw's friction under the wheel's load; while no fingertip touches it, the model holds it where
+    it is on the cutter, as that friction does). Turning the knob clockwise seen from its end (negative
+    about the cutter's x) feeds the wheel in by ``pitch`` a turn; at knob angle 0 the wheel just touches the tube.
+    The groove's depth is kept in ``bins`` sectors round the tube: as the wheel passes into each sector, it cuts it to
+    the wheel's depth (at most the ``wall``). The bite is how far the wheel is fed past the groove under it; over
+    ``dent`` (m) the wheel crushes the tube out of round (latched). Once every sector is cut through, the ``offcut``
+    (held in place by the model until then) is let go. Angles are tracked continuously (turns add up).
     """
 
-    def __init__(self, cutter, knob, offcut, offcut_pose, knob_x, knob_r, pitch, wall, dent, bins=72, stride=2):
+    def __init__(self, cutter, knob, offcut, offcut_pose, pitch, wall, dent, bins=72, stride=2, knob_x=None,
+                 knob_r=None):
         self.cutter, self.knob, self.offcut = cutter, knob, offcut
+        self.knob_x, self.knob_r = knob_x, knob_r  # the knob along the cutter's x (from, to) and its radius
         self.bodies = [cutter, knob, offcut]
         self.offcut_pose = (np.asarray(offcut_pose[0], float), tuple(offcut_pose[1]))  # env frame position, quat
-        self.knob_x, self.knob_r = knob_x, knob_r
         self.pitch, self.wall, self.dent_at, self.n = pitch, wall, dent, bins
         self.stride = stride
         self.origin = np.zeros(3)
@@ -918,49 +922,46 @@ class TubeCut:
 
     def clear(self) -> None:
         self.groove = np.zeros(self.n)
-        self.knob_angle = 0.0  # rad, clockwise seen from the knob's end (tightening) positive
-        self.turned = 0.0  # rad the cutter has turned round the tube, all told
+        self.knob_angle = 0.0  # rad about the cutter's x (negative: tightened)
+        self.turned = 0.0
+        self._k = None
         self._phi = None
-        self._touch: dict = {}  # arm -> the fingertip's y on the knob (cutter frame) at the last update
         self.dented = False
         self.max_bite = 0.0
         self.through = False
+        self.held_k = None  # the knob's angle on the cutter while nothing touches it (the screw's friction holds it)
         self.poses: dict = {}
 
     def feed(self) -> float:
         """The wheel's depth into the tube's outside surface (m; negative: clear of it)."""
-        return self.knob_angle / (2 * math.pi) * self.pitch
+        return -self.knob_angle / (2 * math.pi) * self.pitch
+
+    def touched(self, fc) -> bool:
+        """A fingertip within 2 mm of the knob's surface."""
+        if self.knob_x is None:
+            return True
+        pts = finger_points(links=("tip_left", "tip_right"))
+        if not len(pts):
+            return False
+        loc = (pts - fc.pos) @ fc.rot
+        x0, x1 = self.knob_x
+        near = (loc[:, 0] > x0 - 2.0e-3) & (loc[:, 0] < x1 + 2.0e-3)
+        r = np.hypot(loc[:, 1], loc[:, 2])
+        return bool(np.any(near & (r < self.knob_r + 2.0e-3)))
 
     def _bin(self, phi: float) -> int:
         return int((phi % (2 * math.pi)) / (2 * math.pi) * self.n) % self.n
 
-    def roll(self, arm: str, tip_local) -> None:
-        """A fingertip (``tip_local``: the lowest point of an arm's pads, in the cutter's frame, or None) on the
-        knob: rolling it along y turns the knob."""
-        x0, x1 = self.knob_x
-        on = (tip_local is not None and x0 <= tip_local[0] <= x1 and abs(tip_local[1]) < self.knob_r
-              and tip_local[2] <= self.knob_r + 1.0e-3)
-        if not on:
-            self._touch.pop(arm, None)
-            return
-        last = self._touch.get(arm)
-        if last is not None:
-            self.knob_angle += (tip_local[1] - last) / self.knob_r
-        self._touch[arm] = tip_local[1]
-
     def update(self, frames, acc) -> None:
-        fc = frames[self.cutter]
-        for arm in ("left_robot", "right_robot"):
-            pts = finger_points((arm,), links=("tip_left", "tip_right"))
-            tip = None
-            if len(pts):
-                low = pts[pts[:, 2] < pts[:, 2].min() + 2.0e-3]
-                tip = fc.local(low.mean(axis=0))
-            self.roll(arm, tip)
+        fc, fk = frames[self.cutter], frames[self.knob]
+        r = fc.rot.T @ fk.rot
+        k = math.atan2(r[2, 1], r[1, 1])
         phi = math.atan2(fc.rot[1, 0], fc.rot[0, 0])
-        if self._phi is None:
-            self._phi = phi
+        if self._k is None:
+            self._k, self._phi = k, phi
+        dk = (k - self._k + math.pi) % (2 * math.pi) - math.pi
         dphi = (phi - self._phi + math.pi) % (2 * math.pi) - math.pi
+        self.knob_angle += dk
         self.turned += abs(dphi)
         w = self.feed()
         b0, b1 = self._bin(self._phi), self._bin(phi)
@@ -976,13 +977,18 @@ class TubeCut:
         if b1 != b0:  # the wheel cuts only as it rolls round (into the next sector: a jiggle in place cuts nothing)
             for s in swept:
                 self.groove[s] = max(self.groove[s], cut)
-        self._phi = phi
+        self._k, self._phi = k, phi
         if not self.through and self.groove.min() >= self.wall - 1e-9:
             self.through = True
         poses = {} if self.through else {self.offcut: (self.origin + self.offcut_pose[0], self.offcut_pose[1])}
-        # the drawn knob: on the cutter's x axis, turned about it
-        kc = fc.world(np.array([(self.knob_x[0] + self.knob_x[1]) / 2, 0.0, 0.0]))
-        c, s_ = math.cos(-self.knob_angle), math.sin(-self.knob_angle)
-        rk = fc.rot @ np.array([[1.0, 0.0, 0.0], [0.0, c, -s_], [0.0, s_, c]])
-        poses[self.knob] = (kc, matrix_to_quat_rel(rk))
+        if self.knob_x is not None:
+            if self.touched(fc):
+                self.held_k = None
+            else:
+                if self.held_k is None:
+                    self.held_k = k
+                c, s_ = math.cos(self.held_k), math.sin(self.held_k)
+                rk = fc.rot @ np.array([[1.0, 0.0, 0.0], [0.0, c, -s_], [0.0, s_, c]])
+                kc = fc.world(np.array([(self.knob_x[0] + self.knob_x[1]) / 2, 0.0, 0.0]))
+                poses[self.knob] = (kc, matrix_to_quat_rel(rk))
         self.poses = poses

@@ -56,7 +56,7 @@ CUT_H = 38.0 * MM  # its body's height, centred on the mark
 RAIL_Y = 18.0 * MM  # its frame's outer half-width
 KNOB_X0, KNOB_X1 = 95.0 * MM, 130.0 * MM  # the knob along the cutter's x, from the tube's axis
 KNOB_R = 12.5 * MM
-CUTTER_MASS, KNOB_MASS = 0.360, 0.005  # (the drawn knob's mass is nominal)
+CUTTER_MASS, KNOB_MASS = 0.340, 0.020
 YAW0 = -math.pi / 2  # the knob points to the robot's right (-y)
 QUARTER = PITCH / 4  # the maker's feed per lap
 DENT = PITCH / 2  # the wheel fed over half a turn past the groove under it crushes the tube (our proxy)
@@ -86,7 +86,6 @@ def _cutter_shapes() -> tuple[list, list]:
         box((42.5 * MM, RAIL_Y - 3.5 * MM, 0.0), (105.0 * MM, 7.0 * MM, h), RIDGID_GREY),  # the side rails
         box((42.5 * MM, -RAIL_Y + 3.5 * MM, 0.0), (105.0 * MM, 7.0 * MM, h), RIDGID_GREY),
         box((88.0 * MM, 0.0, 0.0), (14.0 * MM, 2 * RAIL_Y, 26.0 * MM), RIDGID_GREY),  # the screw boss
-        box(((KNOB_X0 + KNOB_X1) / 2, 0.0, 0.0), (KNOB_X1 - KNOB_X0, 2 * KNOB_R, 2 * KNOB_R), RED),  # the knob (below)
     ]
     seen = [
         cyl((-10.0 * MM, 6.0 * MM, 0.0), 4.5 * MM, 16.0 * MM, STEEL),  # the two rollers
@@ -103,16 +102,13 @@ _R0 = np.array([[math.cos(YAW0), -math.sin(YAW0)], [math.sin(YAW0), math.cos(YAW
 CUTTER = body("tube_cutter", pos=(TX, TY, TOP + Z_MARK), yaw=YAW0, mass=CUTTER_MASS, friction=0.8,
               shapes=_CS + _CV, visual_only=tuple(range(len(_CS), len(_CS) + len(_CV))), contact_offset=0.0005,
               com=(30.0 * MM, 0.0, 0.0), inertia=(1.2e-4, 6.0e-4, 6.5e-4))
-KNOB_SHAPE = len(_CS) - 1
-cutterkit.shape_friction(CUTTER.name, KNOB_SHAPE, 0.0)  # the knob turns under a fingertip: it does not drag the cutter
-cutterkit.hidden(CUTTER.name, KNOB_SHAPE)  # (the knob is drawn round, turning, by the body below)
 _KC = np.array([TX, TY]) + _R0 @ np.array([(KNOB_X0 + KNOB_X1) / 2, 0.0])
-# the knob as drawn turning (the model poses it; it does not collide): red, with a white index line along it
-KNOB = body("feed_knob", pos=(_KC[0], _KC[1], TOP + Z_MARK), yaw=YAW0, mass=KNOB_MASS,
-            shapes=[cyl((0.0, 0.0, 0.0), KNOB_R + 0.3 * MM, KNOB_X1 - KNOB_X0 - 1.0 * MM, RED, axis="X"),
-                    box((0.0, 0.0, KNOB_R + 0.3 * MM), (KNOB_X1 - KNOB_X0 - 1.0 * MM, 3.0 * MM, 0.8 * MM), (0.95, 0.95, 0.95))],
-            visual_only=(0, 1), inertia=(1e-7, 1e-7, 1e-7))
-cutterkit.no_gravity(KNOB.name)
+# the feed knob: knurled red plastic on the feed screw, turning on the cutter (a white index line along it)
+KNOB = body("feed_knob", pos=(_KC[0], _KC[1], TOP + Z_MARK), yaw=YAW0, mass=KNOB_MASS, friction=1.0,
+            shapes=[cyl((0.0, 0.0, 0.0), KNOB_R, KNOB_X1 - KNOB_X0, RED, axis="X"),
+                    box((0.0, 0.0, KNOB_R + 0.2 * MM), (KNOB_X1 - KNOB_X0 - 1.0 * MM, 3.0 * MM, 0.6 * MM),
+                        (0.95, 0.95, 0.95))],
+            visual_only=(1,), contact_offset=0.0005, inertia=(1.0e-5, 1.0e-5, 1.0e-5))
 # the offcut: the tube above the mark (it does not collide with the cutter, which rides on the cut round it; once cut
 # off it stands on the stub's cut end)
 OFFCUT = body("offcut", pos=(TX, TY, TOP + Z_MARK), mass=0.017, friction=0.6, contact_offset=0.0005,
@@ -122,9 +118,19 @@ OFFCUT = body("offcut", pos=(TX, TY, TOP + Z_MARK), mass=0.017, friction=0.6, co
 cutterkit.no_collide(OFFCUT.name, CUTTER.name)
 OBJECTS = [STAND, CUTTER, KNOB, OFFCUT]
 cutterkit.register(*OBJECTS)
-cutterkit.add_hinge(Hinge(STAND.name, CUTTER.name, anchor=(0.0, 0.0, Z_MARK), axis=(0.0, 0.0, 1.0), damping=0.25))
+# the forces (our estimates): fed a quarter turn a lap, the wheel bears on the tube with about 25 N; the cutter
+# then turns against a rolling and cutting resistance of about 0.3 N m (5 N pushed 6 cm out), and the knob against
+# the feed screw's friction under that load, about 0.025 N m (T = F p / (2 pi eta), eta 0.3: 2 N at its rim, less
+# than the 2.7 N at the knob that would turn the whole cutter, so the knob can be turned without holding it). Both
+# are Coulomb frictions on their hinges.
+CUT_TORQUE = 0.30
+KNOB_TORQUE = 0.025
+cutterkit.add_hinge(Hinge(STAND.name, CUTTER.name, anchor=(0.0, 0.0, Z_MARK), axis=(0.0, 0.0, 1.0), damping=20.0,
+                          max_torque=CUT_TORQUE))
+cutterkit.add_hinge(Hinge(CUTTER.name, KNOB.name, anchor=((KNOB_X0 + KNOB_X1) / 2, 0.0, 0.0), axis=(1.0, 0.0, 0.0),
+                          damping=0.5, max_torque=KNOB_TORQUE))
 MODEL = cutterkit.add_model(TubeCut(CUTTER.name, KNOB.name, OFFCUT.name, ((TX, TY, TOP + Z_MARK), (0, 0, 0, 1)),
-                                    (KNOB_X0, KNOB_X1), KNOB_R, PITCH, WALL, DENT))
+                                    PITCH, WALL, DENT, knob_x=(KNOB_X0, KNOB_X1), knob_r=KNOB_R))
 
 # -- scoring -------------------------------------------------------------------------------------------------------
 # 1.0   the tube cut through, the offcut off it and down on the board or the table, no gripper within 1 cm of the
@@ -200,8 +206,8 @@ TIP = 13.0 * MM  # the TCP is this far behind the pad tips
 RHOME, LHOME = (0.14, -0.22, TOP + 0.17), (0.14, 0.22, TOP + 0.17)
 PUSH_X = 60.0 * MM  # the pads push the frame's side this far out from the tube's axis
 PUSH_Z = Z_MARK - 8.0 * MM  # the pad tips' height while pushing (the frame is 81 to 119 mm up)
-LEAD = math.radians(6.0)  # the pads aim this far ahead of the frame's side (the soft arm trails)
-END_LEAD = math.radians(4.3)  # ... and at the end of a push (the cutter then stops on its heading: seen in the sim)
+LEAD = math.radians(22.0)  # the pads aim this far ahead of the frame's side (the soft arm trails: about 6 N)
+END_LEAD = math.radians(17.0)  # ... and at the end of a push (the cutter then stops on its heading)
 STEP = math.radians(10.0)
 WAIT = "wait"
 
@@ -243,28 +249,38 @@ def push(y0: float, y1: float, off: float, label: str) -> list:
 
 ROLL = 0.25 * 2 * math.pi * KNOB_R  # a quarter turn of the knob's rim
 ROLL_LAG = 0.0 * MM  # the fingertip aims this much further (the soft arm trails)
-ROLL_FROM = 7.0 * MM  # the stroke starts this far on the robot's side of the knob's top
-PRESS_IN = 1.5 * MM  # the fingertip presses this far into the knob's top
+ROLL_FROM = 6.0 * MM  # the stroke starts this far past the knob's top (the arm trails ~5 mm: it lands just past it)
+STROKES = 2  # a stroke turns the knob about 40 degrees: two make about the maker's quarter turn
+ROLL_TO = 16.0 * MM  # ... and rolls on over its far flank (pressed there it turns the tightening way; pressed on the
+# near flank it would turn back)
+PRESS_IN = 10.0 * MM  # the fingertip aims this far into the knob's top: about 3 N down (the arm is soft)
 
 
-def _cutter_point(x: float, y: float = 0.0) -> tuple[float, float]:
-    """A point on the cutter (its frame's x, y) with the cutter at its start, in the env frame."""
-    p = np.array([TX, TY]) + _R0 @ np.array([x, y])
-    return float(p[0]), float(p[1])
+def _cutter_point(x: float, y: float = 0.0, yaw: float = YAW0) -> tuple[float, float]:
+    """A point on the cutter (its frame's x, y) with the cutter at heading ``yaw`` (default: its start), env frame."""
+    c, s = math.cos(yaw), math.sin(yaw)
+    return float(TX + c * x - s * y), float(TY + s * x + c * y)
 
 
-def turn_knob(label: str) -> list:
+LAP_SHORT = math.radians(2.3)  # a lap pushed round stops this far short of the start heading (seen in the sim)
+
+
+def turn_knob(label: str, yaw: float = YAW0) -> list:
     """The right hand's closed fingertips press on the knob's top and roll it a quarter turn the tightening way
     (clockwise seen from its end: its top drawn towards the cutter's +y side, away from the robot), then lift off."""
-    x0, y0 = _cutter_point((KNOB_X0 + KNOB_X1) / 2, -ROLL_FROM)
-    x1, y1 = _cutter_point((KNOB_X0 + KNOB_X1) / 2, ROLL - ROLL_FROM + ROLL_LAG)
+    x0, y0 = _cutter_point((KNOB_X0 + KNOB_X1) / 2, ROLL_FROM, yaw)
+    x1, y1 = _cutter_point((KNOB_X0 + KNOB_X1) / 2, ROLL_TO, yaw)
     z = TOP + Z_MARK + KNOB_R - PRESS_IN + TIP
-    zup = z + 0.03
+    zup = TOP + Z_MARK + KNOB_R + TIP + 0.02
     yaw = _hand_yaw(YAW0, math.pi)  # fingers close across the knob (8 mm along the roll, 15.5 mm along it)
-    return [Waypoint(1.0, (x0, y0, zup), FINGER_CLOSED, f"over the knob ({label})", yaw),
-            Waypoint(0.6, (x0, y0, z), FINGER_CLOSED, "down on its top", yaw),
-            Waypoint(1.2, (x1, y1, z), FINGER_CLOSED, "roll it a quarter turn", yaw),
-            Waypoint(0.5, (x1, y1, zup), FINGER_CLOSED, "up off it", yaw)]
+    out = []
+    for k in range(STROKES):
+        out += [Waypoint(1.0 if k == 0 else 0.6, (x0, y0, zup), FINGER_CLOSED,
+                         f"over the knob ({label})" if k == 0 else "back over it", yaw),
+                Waypoint(0.6, (x0, y0, z), FINGER_CLOSED, "down on its top", yaw),
+                Waypoint(1.2, (x1, y1, z), FINGER_CLOSED, "roll it a quarter turn" if k == 0 else "and on", yaw),
+                Waypoint(0.5, (x1, y1, zup), FINGER_CLOSED, "up off it", yaw)]
+    return out
 
 
 def offcut_off_plan() -> list:
@@ -297,13 +313,13 @@ LAPS = 3
 
 
 def demo():
-    """``TC_DEMO=crank`` (a shortcut check): turn the knob a full turn at once before the first lap."""
-    crank = os.environ.get("TC_DEMO") == "crank"
+    """``TC_DEMO=nofeed`` (a shortcut check): push the cutter round without ever turning the knob."""
+    nofeed = os.environ.get("TC_DEMO") == "nofeed"
     right = [Waypoint(2.0, RHOME, FINGER_CLOSED, WAIT, 0.0)]  # (the fingers close slowly: the run's guard)
     left = [Waypoint(2.0, LHOME, FINGER_CLOSED, WAIT, 0.0)]
     for lap in range(LAPS):
-        for _ in range(4 if crank and lap == 0 else 1):
-            right += turn_knob(f"lap {lap + 1}")
+        if not nofeed:
+            right += turn_knob(f"lap {lap + 1}", YAW0 if lap == 0 else YAW0 - LAP_SHORT)
         right += [Waypoint(1.2, RHOME, FINGER_CLOSED, "aside", 0.0)]
         _sync(right, left)
         y0 = YAW0 + 2 * math.pi * lap

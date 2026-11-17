@@ -41,37 +41,25 @@ def _rx(a):
 
 
 class Rig:
-    """Drives the model as the simulator would: the cutter's heading, and a fingertip rolling on the knob."""
+    """Drives the model as the simulator would: the cutter's heading, and the knob's angle on it."""
 
     def __init__(self):
         self.m = M.MODEL
-        self.yaw = M.YAW0
+        self.m.knob_x = None  # (no fingertips offline: the model does not hold the knob)
+        self.yaw, self.knob = M.YAW0, 0.0
         self.step()
 
     def step(self):
-        frames = {M.CUTTER.name: ck.Frame(pos=ZERO, rot=_rz(self.yaw), vel=ZERO, spin=ZERO, com=ZERO),
-                  M.KNOB.name: ck.Frame(pos=ZERO, rot=np.eye(3), vel=ZERO, spin=ZERO, com=ZERO),
+        rc = _rz(self.yaw)
+        frames = {M.CUTTER.name: ck.Frame(pos=ZERO, rot=rc, vel=ZERO, spin=ZERO, com=ZERO),
+                  M.KNOB.name: ck.Frame(pos=ZERO, rot=rc @ _rx(self.knob), vel=ZERO, spin=ZERO, com=ZERO),
                   M.OFFCUT.name: ck.Frame(pos=ZERO, rot=np.eye(3), vel=ZERO, spin=ZERO, com=ZERO)}
         self.m.update(frames, {})
 
-    def tighten(self, turns, steps=20, height=None):
-        """Roll a fingertip across the knob's top (in the cutter's frame) by ``turns`` of its rim, in strokes of at
-        most a quarter turn (one stroke stays on the knob's top)."""
-        n = max(1, math.ceil(abs(turns) / 0.25 - 1e-9))
-        for _ in range(n):
-            self._stroke(turns / n, steps, height)
-
-    def _stroke(self, turns, steps, height):
-        xm = (M.KNOB_X0 + M.KNOB_X1) / 2
-        z = M.KNOB_R if height is None else height
-        dy = 2 * math.pi * M.KNOB_R * turns / steps
-        y = -dy * steps / 2
-        self.m.roll("test", None)
-        for _ in range(steps + 1):
-            self.m.roll("test", np.array([xm, y, z]))
+    def tighten(self, turns, steps=20):
+        for _ in range(steps):
+            self.knob -= 2 * math.pi * turns / steps
             self.step()
-            y += dy
-        self.m.roll("test", None)
 
     def lap(self, degrees=360.0, steps=120):
         for _ in range(steps):
@@ -79,21 +67,27 @@ class Rig:
             self.step()
 
 
-def test_a_fingertip_hovering_over_the_knob_or_off_its_end_turns_nothing():
-    r = Rig()
-    r.tighten(0.25, height=M.KNOB_R + 3 * MM)
-    assert r.m.knob_angle == 0.0
-    xm = M.KNOB_X1 + 5 * MM
-    r.m.roll("t", np.array([xm, -5 * MM, M.KNOB_R])); r.m.roll("t", np.array([xm, 5 * MM, M.KNOB_R]))
-    assert r.m.knob_angle == 0.0
+@pytest.fixture(autouse=True)
+def restore_knob():
+    yield
+    M.MODEL.knob_x = (M.KNOB_X0, M.KNOB_X1)
 
 
-def test_rolling_the_knob_top_away_from_the_robot_tightens_it():
-    r = Rig()
-    r.tighten(0.25)
-    assert r.m.feed() == pytest.approx(M.QUARTER, rel=1e-6)
-    r.tighten(-0.25)
-    assert r.m.feed() == pytest.approx(0.0, abs=1e-12)
+def test_the_knob_is_held_where_it_is_while_nothing_touches_it():
+    m = M.MODEL
+    frames = {M.CUTTER.name: ck.Frame(pos=ZERO, rot=_rz(M.YAW0), vel=ZERO, spin=ZERO, com=ZERO),
+              M.KNOB.name: ck.Frame(pos=ZERO, rot=_rz(M.YAW0) @ _rx(-0.3), vel=ZERO, spin=ZERO, com=ZERO),
+              M.OFFCUT.name: ck.Frame(pos=ZERO, rot=np.eye(3), vel=ZERO, spin=ZERO, com=ZERO)}
+    m.update(frames, {})
+    assert M.KNOB.name in m.poses and m.held_k == pytest.approx(-0.3)
+
+
+def test_the_forces_are_frictions_on_the_two_hinges():
+    hinges = {h.child: h for h in ck._HINGES.values()}
+    assert hinges[M.CUTTER.name].max_torque == M.CUT_TORQUE
+    assert hinges[M.KNOB.name].max_torque == M.KNOB_TORQUE
+    # the knob turns before the whole cutter does when its top is rolled
+    assert M.KNOB_TORQUE / M.KNOB_R < M.CUT_TORQUE / ((M.KNOB_X0 + M.KNOB_X1) / 2)
 
 
 def states(offcut=None, moving=False):
@@ -294,7 +288,7 @@ def test_the_demo_fits_the_run_limit():
 def test_the_demo_turns_the_knob_a_quarter_turn_once_a_lap_before_going_round():
     d = M.demo()
     labels = [w.label for w in d["right"]]
-    assert labels.count("roll it a quarter turn") == M.LAPS
+    assert labels.count("roll it a quarter turn") == M.LAPS and labels.count("and on") == M.LAPS * (M.STROKES - 1)
     assert M.ROLL == pytest.approx(0.25 * 2 * math.pi * M.KNOB_R)
 
 
@@ -306,3 +300,10 @@ def test_the_hands_keep_apart():
         a, b = np.asarray(lp.target(t)[0]), np.asarray(rp.target(t)[0])
         if a[2] < M.TOP + 0.17 and b[2] < M.TOP + 0.17:
             assert np.linalg.norm(a[:2] - b[:2]) > 0.08, t
+
+
+def test_laps_without_feeding_cut_nothing():
+    r = Rig()
+    for _ in range(3):
+        r.lap()
+    assert r.m.groove.max() == 0.0 and not r.m.through
