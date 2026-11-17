@@ -32,7 +32,7 @@ SCENE = "station"
 TOP = TABLE_TOP[SCENE]
 MM = 0.001
 PRIMER = (0.88, 0.88, 0.85)  # factory-primed poplar
-BLACK = (0.07, 0.07, 0.08)  # Pemko finish BL
+BLACK = (0.07, 0.07, 0.08)  # the strip (black)
 
 # -- sizes (env frame: x forward, y left, z up from the table top) ---------------------------------------------------
 # the jamb: Pease Doors exterior head jamb, SKU TJH324, 32 in (for a 31-3/4 in slab), 4-9/16 in deep, primed poplar;
@@ -43,8 +43,9 @@ JX0, JX1 = 0.242, 0.358  # its front (robot side) and back edges: 116 mm (4-9/16
 JT = 19.05 * MM  # the rabbet floor's height (3/4 in)
 STOP_X = 0.290  # the stop's face; the rabbet floor in front of it is 48 mm wide (a 1-3/4 in door and its play)
 STOP_H = 12.7 * MM
-KERF_W, KERF_D = 3.2 * MM, 9.5 * MM
-# the strip: Pemko Q102BL foam kerf-in weatherstrip, 5/8 in reach (the bulb), 1 in total with the fin
+KERF_W, KERF_D = 3.2 * MM, 9.5 * MM  # 1/8 x 3/8 in: the standard kerf the strip is made for
+# the strip: Amesbury FOAM-TITE 12403 kerf weatherseal (a TPE foam bulb in a TPV skin on a rigid polypropylene fin);
+# its profile sizes are our estimates
 BULB_X, BULB_Z = 15.9 * MM, 12.7 * MM
 FIN_X, FIN_Z = 9.5 * MM, 1.5 * MM
 KERF_Z = JT + BULB_Z / 2  # the kerf's centre: at the fin's height when the strip lies on the rabbet floor
@@ -91,8 +92,10 @@ for i in range(1, N_LINKS):
                              damping=2e-5))
 HOME_X = STOP_X - BULB_X / 2  # a link home: its bulb against the stop's face
 # the fin's barbs in the kerf: each 23.9 mm of strip resists being pushed in (and drawn out) by up to INSERT_F
-# newtons, a Coulomb friction across the stop's face (our estimate of a firm thumb press: about 170 N per metre)
-INSERT_F = 4.0
+# newtons, a Coulomb friction across the stop's face: the measured insertion force of this strip, 11.65 N for a 1 in
+# (25.4 mm) length (US 8474189 B1, Table 6, Comparative Example B: Amesbury FOAM-TITE 12403, a Chatillon DFIS 10 force
+# gauge at 2 in/min, in a 0.080 in kerf), scaled to the link's 23.9 mm: 10.97 N
+INSERT_F = float(os.environ.get("WS_INSERT_F", str(round(11.65 * (LINK * 1000.0 / 25.4), 2))))
 for _s in STRIP:
     weatherkit.add_drag(Drag(JAMB.name, _s.name, axis="X", force=INSERT_F))
 MODEL = weatherkit.add_model(Kerf([s.name for s in STRIP], FIN_TIP, STOP_X, TOP + KERF_Z, JY0 - FLUSH, JY1 + FLUSH,
@@ -193,7 +196,7 @@ TIP = 13.0 * MM  # the TCP is this far above the pad tips
 YAW_R, YAW_L = math.pi / 2, -math.pi / 2
 RHOME, LHOME = (0.16, -0.22, TOP + 0.15), (0.16, 0.22, TOP + 0.15)
 SEATED_X = HOME_X
-PUSH_IN = 28.0 * MM  # the press aims this far past home (the arm is soft: about 8 N)
+PUSH_IN = float(os.environ.get("WS_PUSH", "48")) * MM  # the press aims this far past home (the soft arm: about 14 N)
 PRESS_Z = 2.0 * MM  # pads' tips this far above the rabbet floor while pressing
 DRAG_Z = BULB_Z - 6.0 * MM  # pads' tips this far above the floor when dragging the strip along: 6 mm into its top
 SLIDE = -SHIFT0  # drag it this far towards the left-hand end

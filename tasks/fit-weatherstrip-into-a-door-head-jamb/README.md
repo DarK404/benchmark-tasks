@@ -63,7 +63,7 @@ The demo is open loop: it uses only the fixed layout, never the simulator's inte
    17 presses take it to the middle. The right hand goes home.
 3. **The left half.** The left hand presses on from the middle in the same way to the left-hand end, and goes home.
 
-The demo reaches 1.0 (success) in 1,378 steps (68.9 s). No step of it is clamped by the run's delta-limit guard (the
+The demo reaches 1.0 (success) in 1,344 steps (67.2 s). No step of it is clamped by the run's delta-limit guard (the
 gripper may change by at most 5% of its range per step); `test_weatherstrip.py` checks every step against it, that
 every pose along the arms' paths is reached, that the hands keep apart, and that every length of the strip is
 pressed.
@@ -84,13 +84,13 @@ Evaluated every control step; the score at the end of the episode counts (`SCORE
 | 0 | anything else (for example the strip pressed against the stop's face with its fin not in the kerf) | the leaf |
 
 `score()` gives 1.0 only once the full-score state has held for 1 s (until then 0.5). Offline checks of every tier,
-the kerf model and the demo: `python -m pytest -q test_weatherstrip.py` (29 tests, no simulator).
+the kerf model and the demo: `python -m pytest -q test_weatherstrip.py` (32 tests, no simulator).
 
 ## Runtime and seeds
 
 Measured on an L40S with the viewer on, Isaac Sim's start-up included:
-- the demo trial (1,378 steps, 68.9 s of simulated time) took 5.2 minutes of wall-clock time;
-- the Dream-1 trial (the full 2,400 steps, 2 minutes simulated) took 9.1 minutes.
+- the demo trial (1,344 steps, 67.2 s of simulated time) took 5.1 minutes of wall-clock time;
+- the Dream-1 trial (the full 2,400 steps, 2 minutes simulated) took 8.6 minutes.
 
 The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
 
@@ -98,12 +98,14 @@ The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
 
 - **The kerf** is a real 3.2 mm slot in the stop's collision geometry, which guides the 1.5 mm fin in; a length of
   strip counts as home once its fin is at least 8 mm in (`weatherkit.Kerf` records it).
-- **The insertion force** is modelled: each 23.9 mm length of strip resists being pushed into the kerf, or drawn back
-  out of it, with up to 4 N (`weatherkit.Drag`: a Coulomb friction across the stop's face, solved implicitly by the
-  simulator, so it is stable on the light links). That is about 170 N per metre of strip: our estimate of a firm
-  thumb press (the makers say "press firmly" and publish no figure; we have not been able to measure one). The same
-  friction holds a seated fin in, as the barbs do. The demo's presses aim 28 mm past home with the soft simulated
-  arms, about 8 N.
+- **The insertion force** is modelled, from a measurement: each 23.9 mm length of strip resists being pushed into
+  the kerf, or drawn back out of it, with up to 10.97 N (`weatherkit.Drag`: a Coulomb friction across the stop's face,
+  solved implicitly by the simulator, so it is stable on the light links). That is this strip's measured insertion
+  force, 11.65 N for a 1 in (25.4 mm) length, scaled to the link's length: US patent 8474189 B1, Table 6, Comparative
+  Example B (Amesbury FOAM-TITE 12403 weatherseal, three 1 in samples pressed in at 2 in/min with a Chatillon DFIS 10
+  digital force gauge). The patent measured it in a 0.080 in kerf; the jamb here has the standard 1/8 in kerf the
+  strip is sold for, so the measured force is if anything on the high side. The same friction holds a seated fin in,
+  as the barbs do. The demo's presses aim 48 mm past home with the soft simulated arms, about 14 N.
 - **The strip** is 34 links of 23.9 mm (81.3 cm), a box bulb 15.9 x 12.7 mm with a 9.5 x 1.5 mm fin, 25 g in all
   (our estimate), joined by bending joints: they cannot stretch or twist, and bend against a spring of 0.01 N m/rad
   each (our estimate). The real strip can also be stretched, which the makers warn against; the simulated one
@@ -117,8 +119,7 @@ The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
 - A Pease Doors exterior head jamb for a 32 in door, SKU TJH324 (primed treated poplar, 4-9/16 in deep, 1-1/4 in
   thick with the stop, 3/4 in without, 32 in long; kerfed for standard 1/8 in weatherstrip), lying on its back,
   fixed with double-sided carpet tape.
-- A Pemko Q102BL foam kerf-in weatherstrip (black, 5/8 in reach), cut square to 81.3 cm from a 36 in length
-  (Q102BL36 or a longer length).
+- An Amesbury FOAM-TITE 12403 kerf weatherseal (TPE foam bulb, rigid polypropylene fin), cut square to 81.3 cm.
 
 Positions are in `task.json`.
 

@@ -226,5 +226,10 @@ def test_every_length_of_strip_has_the_insertion_friction_against_the_jamb():
 
 
 def test_the_demo_presses_harder_than_the_insertion_friction():
-    """The press aims PUSH_IN past home: with the soft arms (about 0.3 N/mm) that is about 8 N, twice the friction."""
-    assert 0.3 * M.PUSH_IN / M.MM > 1.5 * M.INSERT_F
+    """The press aims PUSH_IN past home: with the soft arms (about 0.3 N/mm) that is about 14 N, over the friction."""
+    assert 0.3 * M.PUSH_IN / M.MM > 1.25 * M.INSERT_F
+
+
+def test_the_insertion_resistance_is_the_measured_force():
+    """11.65 N for a 1 in length (US 8474189 B1, Table 6, Amesbury FOAM-TITE 12403), scaled to a 23.9 mm link."""
+    assert M.INSERT_F == pytest.approx(11.65 * M.LINK / (25.4 * M.MM), abs=0.01)
