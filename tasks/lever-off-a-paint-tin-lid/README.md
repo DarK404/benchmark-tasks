@@ -68,7 +68,7 @@ The demo is open loop: it uses only the fixed layout, never the simulator's inte
    One hand cannot turn the lid over: the gripper cannot point above level, so it cannot carry the lid past upright,
    and the lid does not pivot between the pads.
 
-The demo reaches 1.0 (success) in 1,345 steps (67.3 s). No step of it is clamped by the run's delta-limit guard
+The demo reaches 1.0 (success) in 1,373 steps (68.7 s). No step of it is clamped by the run's delta-limit guard
 (the gripper may change by at most 5% of its range per step); `test_paint_tin.py` checks every step against it.
 
 ## Scoring
@@ -97,8 +97,8 @@ Offline checks of every tier, latch and edge case: `python -m pytest -q test_pai
 
 Measured on an L40S. The simulation runs about 3.5 times slower than real time (about 6 control steps a second:
 each step has 12 physics substeps with 32 solver iterations for the thin parts, the seal model and three cameras).
-The demo trial (1,345 steps, 67.3 s of simulated time) took 4.8 minutes of wall-clock time, about 15 s of it Isaac
-Sim's start-up; the Dream-1 trial (the full 2,400 steps, 2 minutes simulated) took 7.5 minutes. The layout is fixed (`-E object_jitter=0`); there are no seeds to choose. The demo reached success at the same
+The demo trial (1,373 steps, 68.7 s of simulated time) took 5.3 minutes of wall-clock time, about 15 s of it Isaac
+Sim's start-up; the Dream-1 trial (the full 2,400 steps, 2 minutes simulated) took 7.4 minutes. The layout is fixed (`-E object_jitter=0`); there are no seeds to choose. The demo reached success at the same
 step in a development harness and under `inspect-robots run`.
 
 ## Fidelity
@@ -107,8 +107,11 @@ step in a development harness and under `inspect-robots run`.
   because PhysX's custom cylinders missed the blade's thin contacts. The lid's rolled edge is visual only: as a
   collision shape it stood in the blade's way.
 - **The press-fit seal** is a force model (`tinkit.Seal`). Twelve catches spaced round the lid each pull it down with
-  0.5 N until the lid's edge there has risen 0.8 mm, then let go for good. A real lid needs tens of newtons, which the
-  screwdriver's leverage supplies; in simulation a stronger seal could not be pried at all.
+  3 N until the lid's edge there has risen 0.8 mm, then let go for good: 36 N in all, the tens of newtons a real
+  press-fit lid holds with (our estimate for a 450 ml tin; not measured). The lid is rigid, so prying one edge up
+  tips it against all twelve catches: about 18 N at the blade's end, which the screwdriver's leverage over the rim
+  supplies (the demo's lever stroke releases seven catches at once). To keep the light lid from sinking through the
+  blade under these forces, the simulator's depenetration speed is raised from 0.5 to 5 m/s.
 - **The freed lid.** Once every catch has let go, the lid rides 4.5 mm up on the rim, as a real lid levered out of its
   channel sits on top of it, and a weak centring pull (100 N/m, at most 0.3 N) stands in for its plug resting in the
   channel. Without the pull, the loose lid slid 16 mm across the rim. All seal forces stop once the lid is more than

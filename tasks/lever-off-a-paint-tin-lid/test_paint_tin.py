@@ -304,3 +304,8 @@ def test_the_demo_passes_the_run_guards(arm):
     acts = np.array([plan.action7(t)[0] for t in np.arange(0.0, plan.duration, 0.05)])
     worst = (np.abs(np.diff(acts, axis=0)) / GUARD_MAX_DELTA).max()
     assert worst < 0.95, worst
+
+
+def test_the_seal_holds_with_tens_of_newtons():
+    """Twelve catches of 3 N: 36 N in all, the tens of newtons a real press-fit lid holds with."""
+    assert M.SEAL.points * M.SEAL.hold == pytest.approx(36.0)

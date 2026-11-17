@@ -184,7 +184,7 @@ LID_FREE_PROUD = float(__import__("os").environ.get("TIN_FREE_PROUD", "4.5")) * 
 # that stays in the ring instead stopped either pry freeing a single catch.)
 LID_FREE_CENTRE_K = float(__import__("os").environ.get("TIN_FREE_CENTRE_K", "100"))
 SEAL = tinkit.add_seal(Seal(lid="lid", tin="tin", points=12, radius=25.0 * MM, lid_z=0.0, tin_z=SEAT_TOP,
-                            hold=float(__import__("os").environ.get("TIN_HOLD_DEV", "0.5")), release=float(__import__("os").environ.get("TIN_RELEASE", "0.8")) * MM, pop_tilt=20.0,
+                            hold=float(__import__("os").environ.get("TIN_HOLD_DEV", "3.0")), release=float(__import__("os").environ.get("TIN_RELEASE", "0.8")) * MM, pop_tilt=20.0,
                             proud=2.0 * MM, proud_free=LID_FREE_PROUD, centre_k=LID_FREE_CENTRE_K))
 
 

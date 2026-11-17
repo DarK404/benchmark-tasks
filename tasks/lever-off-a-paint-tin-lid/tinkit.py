@@ -24,6 +24,7 @@ from __future__ import annotations
 import importlib.abc
 import importlib.util
 import math
+import os
 import sys
 from dataclasses import dataclass, field
 
@@ -412,7 +413,9 @@ def _spawn_body(prim_path: str, cfg, translation=None, orientation=None, **kwarg
         mass.CreateMassAttr(spec.mass)
         mass.CreateCenterOfMassAttr(Gf.Vec3f(*spec.com))
         rb = PhysxSchema.PhysxRigidBodyAPI.Apply(prim)
-        rb.CreateMaxDepenetrationVelocityAttr(0.5)
+        # WHY 5 m/s (2026-11-17, sim trace): with the seal at its real tens of newtons, the 0.5 m/s default let the
+        # light lid sink through the blade instead of being lifted by it
+        rb.CreateMaxDepenetrationVelocityAttr(float(os.environ.get("TIN_DEPEN", "5.0")))
         rb.CreateSolverPositionIterationCountAttr(spec.solver_iterations)
         rb.CreateSolverVelocityIterationCountAttr(2)
 
