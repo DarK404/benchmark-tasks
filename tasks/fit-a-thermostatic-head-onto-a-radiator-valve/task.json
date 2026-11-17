@@ -1,0 +1,22 @@
+{
+  "title": "Fit a thermostatic head onto a radiator valve: scale pointer at the top, pushed straight on until it snaps home",
+  "category": "Societal relatability",
+  "keywords": [
+    "household",
+    "heating",
+    "radiator",
+    "thermostatic radiator valve",
+    "snap fit",
+    "alignment",
+    "force"
+  ],
+  "instruction": "Fit the thermostatic head onto the radiator valve, its scale pointer at the top.",
+  "context": "Thermostatic radiator valves are on most radiators in European homes and in many hot-water-heated buildings elsewhere; their heads come off when a room is decorated or a radiator is changed, and householders put them back. Danfoss's instructions: check the head is set to 5, offer it with its scale pointer at the top, and push it firmly straight onto the valve until its snap fitting clicks. A head left part way on hangs loose and does not work the valve, so the room is not regulated.",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed: a Type 11 single steel panel radiator (white, 30 cm high x 40 cm long x 5 cm deep, its bottom 10 cm up on two floor brackets) along the far side from x 31.5 to 36.5, y -7.5 to +32.5; at its right-hand end a Danfoss RA-N 15 straight thermostatic valve body (brass), its spindle axis horizontal at x 34, 8 cm above the table, pointing to the robot's right (-y), its RA snap connection (a chrome collar 2 cm across with a snap ridge, standing 1.6 cm out of a 3.6 cm shoulder flange whose face is at y -12.0), protective cap off. Loose: a Danfoss RA 2000 snap-on thermostatic head (white plastic, 4.9 cm across x 9.0 cm long, about 150 g), set to 5, lying on its side on the table centred at x 24, y -30.5, its base (the open bore of its snap fitting) facing the valve (+y), its red scale pointer at the top.",
+  "scoring": "Measured on the head against its seated place on the valve; checked at the end. 1.0: snapped home (its base within 1 mm of the valve's shoulder, so its snap teeth are behind the collar's ridge), on the valve's axis within 1.5 mm and square within 3 degrees, its scale pointer within 20 degrees of the top, no part of either gripper within 1 cm of it, the head still, for 1 s. 0.5: snapped home but the pointer more than 20 degrees from the top, or a hand still on it, or not yet still. 0.25: on the collar with its teeth at or past the ridge's start but not snapped home (part way on). 0: anything else (for example drooping off the collar's tip, or not on the valve).",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "Take the head off the Danfoss way (turn its base counter-clockwise to release the snap fitting and draw it off), check it is still at 5, and lay it back on its side at the marked spot, base towards the valve, scale pointer up. Nothing is consumed.",
+  "fidelity": "All contact, no rules: the head's snap fitting is two teeth on springs (3 N preload each, 2000 N/m) that the collar's 12 mm ridge spreads 1 mm through a 20-degree lead-in, and that drop in behind its square back; friction 0.3. By these figures it takes about 7 N to push home (Danfoss: gentle pressure); they and the inner shapes are our estimates. Boxes.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0 (success at step 355)",
+  "media": "M-XAZDDQ"
+}
