@@ -33,7 +33,7 @@ from yam_arena.task_file import Box, ObjectState
 
 __all__ = ["Shape", "box", "cyl", "ring", "prism12", "Body", "body", "BodyState", "Ball", "add_ball",
            "Hinge", "add_hinge", "Bend", "add_bend", "no_collide", "no_gravity", "tilted", "tool_frame",
-           "add_model", "on_reset", "register", "finger_points", "install", "Kerf"]
+           "add_model", "on_reset", "register", "finger_points", "install", "Kerf", "Drag", "add_drag", "kinematic"]
 
 Color = tuple[float, ...]  # RGB, or RGBA for a see-through (glass) look
 
@@ -270,6 +270,11 @@ def no_gravity(name: str) -> None:
     _NO_GRAVITY.add(name)
 
 
+def kinematic(name: str) -> None:
+    """Body ``name`` (with a mass) is kinematic: a rigid body that joints can hang on, which nothing moves."""
+    _KINEMATIC.add(name)
+
+
 # -- tilted grips for yam_arena.demo waypoints ------------------------------------------------------------------------
 
 
@@ -321,6 +326,7 @@ _MODELS: list = []
 METALLIC: dict = {}  # colour (RGB) -> roughness: shapes of these colours are drawn as bare metal
 _NO_COLLIDE: dict = {}  # body -> bodies it does not collide with (filtered pairs)
 _DAMPED: dict = {}  # body -> (linear, angular) damping (1/s): calms light links
+_KINEMATIC: set = set()  # kinematic bodies (joint anchors)
 _NO_GRAVITY: set = set()  # bodies that ignore gravity (moved by a model, e.g. the front grille's clips)
 _RESET: list = []
 
@@ -360,7 +366,9 @@ def _spawn_body(prim_path: str, cfg, translation=None, orientation=None, **kwarg
     root.AddOrientOp(precision=UsdGeom.XformOp.PrecisionDouble).Set(Gf.Quatd(w, x, y, z))
     prim = root.GetPrim()
     if spec.mass is not None:
-        UsdPhysics.RigidBodyAPI.Apply(prim)
+        rbapi = UsdPhysics.RigidBodyAPI.Apply(prim)
+        if spec.name in _KINEMATIC:
+            rbapi.CreateKinematicEnabledAttr(True)
         mass = UsdPhysics.MassAPI.Apply(prim)
         mass.CreateMassAttr(spec.mass)
         mass.CreateCenterOfMassAttr(Gf.Vec3f(*spec.com))
@@ -444,6 +452,9 @@ def _spawn_body(prim_path: str, cfg, translation=None, orientation=None, **kwarg
     ball = _BALLS.get(cfg.body_name)
     if ball is not None:
         _author_ball(stage, prim_path, ball)
+    drag = _DRAGS.get(cfg.body_name)
+    if drag is not None:
+        _author_drag(stage, prim_path, drag)
     return prim
 
 
@@ -599,6 +610,53 @@ def _author_bend(stage, prim_path: str, b: "Bend") -> None:
         d.CreateDampingAttr(float(b.damping) * math.pi / 180.0)
         d.CreateTargetPositionAttr(0.0)
         d.CreateTargetVelocityAttr(0.0)
+
+
+@dataclass(frozen=True)
+class Drag:
+    """A sliding friction on a body (``child``) along one axis of another (``parent``, typically kinematic): a PhysX
+    D6 joint with every motion free, and a damped linear drive along ``axis`` (the parent's x, y or z) whose force is
+    capped at ``force`` N: it holds against less and slips against more (Coulomb friction, solved implicitly, so it is
+    stable even on very light bodies). The two bodies still collide."""
+
+    parent: str
+    child: str
+    axis: str = "X"
+    force: float = 1.0
+    damping: float = 50.0
+
+
+_DRAGS: dict = {}  # Drag by child
+
+
+def add_drag(d: "Drag") -> "Drag":
+    _DRAGS[d.child] = d
+    return d
+
+
+def _author_drag(stage, prim_path: str, d: "Drag") -> None:
+    from pxr import Gf, UsdPhysics
+
+    parent_path = prim_path.rsplit("/", 1)[0] + "/" + d.parent
+    pspec, cspec = _SPECS[d.parent], _SPECS[d.child]
+    rp = quat_to_matrix(pspec.quat) if pspec.quat else quat_to_matrix(yaw_quat(pspec.yaw))
+    rc = quat_to_matrix(cspec.quat) if cspec.quat else quat_to_matrix(yaw_quat(cspec.yaw))
+    local0 = rp.T @ (np.asarray(cspec.pos, float) - np.asarray(pspec.pos, float))  # the child's origin, parent frame
+    q1 = matrix_to_quat_rel(rc.T @ rp)
+    j = UsdPhysics.Joint.Define(stage, f"{prim_path}/drag")
+    j.CreateBody0Rel().SetTargets([parent_path])
+    j.CreateBody1Rel().SetTargets([prim_path])
+    j.CreateLocalPos0Attr(Gf.Vec3f(*map(float, local0)))
+    j.CreateLocalRot0Attr(Gf.Quatf(1.0, 0.0, 0.0, 0.0))
+    j.CreateLocalPos1Attr(Gf.Vec3f(0.0, 0.0, 0.0))
+    j.CreateLocalRot1Attr(Gf.Quatf(float(q1[3]), float(q1[0]), float(q1[1]), float(q1[2])))
+    j.CreateCollisionEnabledAttr(True)
+    dr = UsdPhysics.DriveAPI.Apply(j.GetPrim(), "trans" + d.axis)
+    dr.CreateTypeAttr("force")
+    dr.CreateStiffnessAttr(0.0)
+    dr.CreateDampingAttr(float(d.damping))
+    dr.CreateTargetVelocityAttr(0.0)
+    dr.CreateMaxForceAttr(float(d.force))
 
 
 def add_hinge(h: "Hinge") -> "Hinge":
@@ -873,12 +931,13 @@ against each other. Partly inserted fins are not held (the simulator's contacts 
     the slot). Runs every ``stride``-th physics substep.
     """
 
-    def __init__(self, links, fin_tip, face_x, kerf_z, y_lo, y_hi, seat, home, stride=2, drift=0.3e-3):
+    def __init__(self, links, fin_tip, face_x, kerf_z, y_lo, y_hi, seat, home, stride=2, drift=0.3e-3, hold=True):
         self.bodies = list(links)
         self.home = home  # (x, z, quat xyzw): a seated link's origin and orientation, fully home and in line
         self.fin_tip = np.asarray(fin_tip, float)
         self.face_x, self.kerf_z, self.y_lo, self.y_hi, self.seat = face_x, kerf_z, y_lo, y_hi, seat
         self.stride, self.drift = stride, drift
+        self.hold = hold  # False: only record which links are seated (a friction joint holds them instead)
         self.origin = np.zeros(3)
         self.locked: dict = {}
         self.poses: dict = {}
@@ -892,6 +951,8 @@ against each other. Partly inserted fins are not held (the simulator's contacts 
         for n in self.bodies:
             f = frames[n]
             if n in self.locked:
+                if not self.hold:
+                    continue
                 p, q, r = self.locked[n]
                 turned = float(np.linalg.norm(f.rot - r))
                 if np.linalg.norm(f.pos - p) > self.drift or turned > 0.02:

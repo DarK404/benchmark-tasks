@@ -216,3 +216,15 @@ def test_the_hands_keep_apart():
 def test_the_demo_presses_every_link():
     labels = [w.label for p in M.demo().values() for w in p]
     assert sorted(int(lab.split()[-1]) for lab in labels if lab.startswith("over link")) == list(range(M.N_LINKS))
+
+
+def test_every_length_of_strip_has_the_insertion_friction_against_the_jamb():
+    drags = {d.child: d for d in wk._DRAGS.values()}
+    assert set(drags) == {s.name for s in M.STRIP}
+    assert all(d.parent == M.JAMB.name and d.axis == "X" and d.force == M.INSERT_F for d in drags.values())
+    assert M.JAMB.name in wk._KINEMATIC
+
+
+def test_the_demo_presses_harder_than_the_insertion_friction():
+    """The press aims PUSH_IN past home: with the soft arms (about 0.3 N/mm) that is about 8 N, twice the friction."""
+    assert 0.3 * M.PUSH_IN / M.MM > 1.5 * M.INSERT_F

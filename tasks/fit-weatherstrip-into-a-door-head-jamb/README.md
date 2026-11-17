@@ -63,7 +63,7 @@ The demo is open loop: it uses only the fixed layout, never the simulator's inte
    17 presses take it to the middle. The right hand goes home.
 3. **The left half.** The left hand presses on from the middle in the same way to the left-hand end, and goes home.
 
-The demo reaches 1.0 (success) in 1,242 steps (62.1 s). No step of it is clamped by the run's delta-limit guard (the
+The demo reaches 1.0 (success) in 1,378 steps (68.9 s). No step of it is clamped by the run's delta-limit guard (the
 gripper may change by at most 5% of its range per step); `test_weatherstrip.py` checks every step against it, that
 every pose along the arms' paths is reached, that the hands keep apart, and that every length of the strip is
 pressed.
@@ -89,20 +89,21 @@ the kerf model and the demo: `python -m pytest -q test_weatherstrip.py` (29 test
 ## Runtime and seeds
 
 Measured on an L40S with the viewer on, Isaac Sim's start-up included:
-- the demo trial (1,242 steps, 62.1 s of simulated time) took 4.6 minutes of wall-clock time;
-- the Dream-1 trial (the full 2,400 steps, 2 minutes simulated) took 8.4 minutes.
+- the demo trial (1,378 steps, 68.9 s of simulated time) took 5.2 minutes of wall-clock time;
+- the Dream-1 trial (the full 2,400 steps, 2 minutes simulated) took 9.1 minutes.
 
 The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
 
 ## Fidelity
 
-- **The kerf** is our own model (`weatherkit.Kerf`): the kerf is a real 3.2 mm slot in the stop's collision
-  geometry, which guides the 1.5 mm fin in; a length of strip whose fin has been pushed at least 8 mm in is then held
-  there, fully home and in line with the kerf, as the barbs hold the real strip (it no longer slides along or backs
-  out). Partly inserted fins are not held.
-- **Not modelled: the insertion force.** In the simulation any push that brings the fin 8 mm in seats it; the real
-  strip needs a firm press of the fingers (the makers say "press firmly" and publish no figure; we have not measured
-  one). The demo's presses aim 12 mm past home with the soft simulated arms.
+- **The kerf** is a real 3.2 mm slot in the stop's collision geometry, which guides the 1.5 mm fin in; a length of
+  strip counts as home once its fin is at least 8 mm in (`weatherkit.Kerf` records it).
+- **The insertion force** is modelled: each 23.9 mm length of strip resists being pushed into the kerf, or drawn back
+  out of it, with up to 4 N (`weatherkit.Drag`: a Coulomb friction across the stop's face, solved implicitly by the
+  simulator, so it is stable on the light links). That is about 170 N per metre of strip: our estimate of a firm
+  thumb press (the makers say "press firmly" and publish no figure; we have not been able to measure one). The same
+  friction holds a seated fin in, as the barbs do. The demo's presses aim 28 mm past home with the soft simulated
+  arms, about 8 N.
 - **The strip** is 34 links of 23.9 mm (81.3 cm), a box bulb 15.9 x 12.7 mm with a 9.5 x 1.5 mm fin, 25 g in all
   (our estimate), joined by bending joints: they cannot stretch or twist, and bend against a spring of 0.01 N m/rad
   each (our estimate). The real strip can also be stretched, which the makers warn against; the simulated one

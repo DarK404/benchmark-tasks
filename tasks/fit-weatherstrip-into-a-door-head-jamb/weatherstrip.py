@@ -21,7 +21,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import weatherkit  # noqa: E402
-from weatherkit import Bend, Kerf, body, box  # noqa: E402
+from weatherkit import Bend, Drag, Kerf, body, box  # noqa: E402
 from yam_arena.analysis import box_signed_distance  # noqa: E402
 from yam_arena.constants import FINGER_CLOSED, FINGER_OPEN  # noqa: E402
 from yam_arena.demo import Waypoint  # noqa: E402
@@ -69,7 +69,8 @@ def _jamb_shapes() -> list:
     ]
 
 
-JAMB = body("head_jamb", pos=(0.0, 0.0, TOP), shapes=_jamb_shapes(), friction=0.5, contact_offset=0.0003)
+JAMB = body("head_jamb", pos=(0.0, 0.0, TOP), shapes=_jamb_shapes(), friction=0.5, contact_offset=0.0003, mass=2.0)
+weatherkit.kinematic(JAMB.name)  # (a rigid body nothing moves, so the strip's friction joints can hang on it)
 
 # the strip lying loose on the rabbet floor along y, its fin towards the kerf (+x); link frames: x along the strip (+y), the fin
 # along -y (world +x: the links are turned 90 degrees); link 0 at the right-hand end (-y)
@@ -89,8 +90,13 @@ for i in range(1, N_LINKS):
     weatherkit.add_bend(Bend(STRIP[i - 1].name, STRIP[i].name, anchor=(LINK / 2, 0.0, 0.0), stiffness=0.01,
                              damping=2e-5))
 HOME_X = STOP_X - BULB_X / 2  # a link home: its bulb against the stop's face
+# the fin's barbs in the kerf: each 23.9 mm of strip resists being pushed in (and drawn out) by up to INSERT_F
+# newtons, a Coulomb friction across the stop's face (our estimate of a firm thumb press: about 170 N per metre)
+INSERT_F = 4.0
+for _s in STRIP:
+    weatherkit.add_drag(Drag(JAMB.name, _s.name, axis="X", force=INSERT_F))
 MODEL = weatherkit.add_model(Kerf([s.name for s in STRIP], FIN_TIP, STOP_X, TOP + KERF_Z, JY0 - FLUSH, JY1 + FLUSH,
-                                  SEAT, home=(HOME_X, TOP + KERF_Z, weatherkit.yaw_quat(math.pi / 2))))
+                                  SEAT, home=(HOME_X, TOP + KERF_Z, weatherkit.yaw_quat(math.pi / 2)), hold=False))
 
 # -- scoring -------------------------------------------------------------------------------------------------------
 # 1.0   every link's fin home in the kerf; both ends flush with the jamb's ends (within 2 mm); no gripper within
@@ -187,7 +193,7 @@ TIP = 13.0 * MM  # the TCP is this far above the pad tips
 YAW_R, YAW_L = math.pi / 2, -math.pi / 2
 RHOME, LHOME = (0.16, -0.22, TOP + 0.15), (0.16, 0.22, TOP + 0.15)
 SEATED_X = HOME_X
-PUSH_IN = 12.0 * MM  # the press aims this far past home (the arm is soft)
+PUSH_IN = 28.0 * MM  # the press aims this far past home (the arm is soft: about 8 N)
 PRESS_Z = 2.0 * MM  # pads' tips this far above the rabbet floor while pressing
 DRAG_Z = BULB_Z - 6.0 * MM  # pads' tips this far above the floor when dragging the strip along: 6 mm into its top
 SLIDE = -SHIFT0  # drag it this far towards the left-hand end
