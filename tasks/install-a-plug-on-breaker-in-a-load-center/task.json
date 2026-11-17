@@ -1,0 +1,23 @@
+{
+  "title": "Install a plug-on breaker in a load center: load end hooked on the rail, jaw pressed fully onto the bus stab",
+  "category": "Impact on jobs",
+  "keywords": [
+    "electrical",
+    "electrician",
+    "circuit breaker",
+    "load center",
+    "plug-on",
+    "seating",
+    "force",
+    "tool-free assembly"
+  ],
+  "instruction": "Install the new breaker in space 4 of the unpowered, unwired load center.",
+  "context": "Electricians (O*NET 47-2111, about 0.8 million workers) install breakers whenever a circuit is added or a breaker is replaced. A plug-on breaker goes in the maker's way: its load (wire terminal) end hooked under the mounting rail at the panel's outer edge, then its line end pushed in until its plug-on jaw is fully on the bus stab. A breaker left part way on its stab makes a poor contact that heats and arcs; one not hooked on the rail works loose. The panel's spaces are numbered on its label: odd on the left, even on the right, from the top.",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed: a Square D Homeline HOM48L125GC 4-space load center, not wired to any supply (painted steel enclosure 37.6 x 22.6 x 9.7 cm, about 3 kg; its plastic interior's breaker-mounting face 3 cm above the table) lying on its back with its dead front off, centred at x 32, y -6, its top (main lugs) away from the robot, so its left-hand column (spaces 1, 3) is at +y and its right-hand column (spaces 2, 4) at -y; the bus stabs down the middle, the mounting rails along both outer edges. Spaces 1 and 3 hold Square D HOM120 breakers; spaces 2 and 4 are empty: space 4 (the right-hand column, the row nearer the robot) is centred at x 30.7, y -10.1. Loose: a new Square D Homeline HOM120 breaker (1-pole, 20 A; 2.54 W x 7.95 H x 7.57 D cm; black plastic housing, copper jaw; about 120 g), OFF, standing on its back (mounting face down) on the table at x 20, y -24, its line (jaw) end pointing away from the robot.",
+  "scoring": "Measured on the breaker against its seated place in space 4; checked at the end. 1.0: in space 4, its jaw fully on the stab and its mounting face down on the interior at both ends (a 1 mm feeler does not pass under either end), its load end hooked under the rail's lip, square (within 2 degrees), no part of either gripper within 1 cm of it, the breaker still, for 1 s. 0.5: hooked on the rail of space 4 with its jaw on the stab's full blade but not home (an end more than 1 mm up), or seated with a hand still on it or not yet still. 0.25: hooked on the rail of space 4, its jaw not on the stab's blade (resting on it). 0: anything else, for example the jaw pushed onto the stab with the load end not under the rail's lip, or the breaker in another space.",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "Remove the breaker the maker's way: lift its line end until the jaw lets go of the stab, then lift its load end off the rail; stand it back on its back on the table at the marked spot, line end away from the robot, handle OFF. Nothing is consumed.",
+  "fidelity": "All contact, no rules: the jaw is two copper shoes on springs (12 N preload each, 4000 N/m, 2.0 mm apart) that must spread over the 3.2 mm stab, whose top tapers at 15 degrees; friction 0.3. The load end's hook slot and the rail's lip (reaching 4.5 mm in) are collision geometry with 1 mm clearances. In the simulator a 40 N push on the line end leaves the jaw part way on; 60 N seats it. The spring and the inner shapes are our estimates. Boxes.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0 (success at step 451)",
+  "media": "M-RJZBTS"
+}
