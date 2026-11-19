@@ -36,13 +36,12 @@ def _rx(a):
 
 def breaker_at(space=M.TARGET, dx=0.0, dy=0.0, dz=0.0, tip=0.0, yaw=0.0, moving=False):
     """The breaker's state: seated in ``space``, then moved (dx, dy, dz along its seated frame), tipped ``tip`` (rad)
-    line end up about its foot's outer bottom edge, and turned ``yaw`` about the vertical."""
-    o, y0 = M.seat_pose(space)
-    r0 = M._rot(y0)
+    line end out from the wall about its foot's outer bottom edge, and turned ``yaw`` in the mounting face's plane."""
+    o, r0 = M.seat_frame(space)
     piv = np.array([0.0, -M.BL / 2, 0.0])
     r = r0 @ M._rot(yaw) @ _rx(tip)
     origin = o + r0 @ piv - r @ piv + r0 @ np.array([dx, dy, dz])
-    vel = np.array([0.0, 0.0, 0.05]) if moving else ZERO
+    vel = np.array([-0.05, 0.0, 0.0]) if moving else ZERO
     return bk.body_state(M.BREAKER, origin, bk.matrix_to_quat_rel(r), vel, ZERO)
 
 
@@ -73,14 +72,30 @@ def test_the_load_center_is_a_hom48l125gc_with_1_in_spaces():
 
 
 def test_spaces_1_and_3_hold_breakers_and_2_and_4_are_empty():
-    # space 4 is the right-hand column (-y), the row nearer the robot; its line end points at the bus (+y)
+    # space 4 is the right-hand column (-y), the lower row; its line end points at the bus (+y)
     o, yaw = M.seat_pose(4)
     assert o[1] < M.PY and o[0] < M.PX and yaw == 0.0
     o3, yaw3 = M.seat_pose(3)
     assert o3[1] > M.PY and yaw3 == pytest.approx(math.pi)
     n_fittings = 4 * len(M._space_fittings(4))
     housing = len(M._breaker_housing(jaw_slot=False))
-    assert len(M.PANEL.shapes) == 9 + n_fittings + 2 * housing
+    assert len(M.PANEL.shapes) == 10 + n_fittings + 2 * housing  # (with the wall board)
+
+
+def test_the_load_center_stands_upright_on_its_wall_board_facing_the_robot():
+    r = M.PANEL_ROT
+    assert np.allclose(r @ r.T, np.eye(3)) and np.linalg.det(r) == pytest.approx(1.0)
+    assert np.allclose(r @ [0, 0, 1], [-1, 0, 0])  # its face (out of its back) towards the robot
+    assert np.allclose(r @ [1, 0, 0], [0, 0, 1])  # its top (main lugs) up
+    o4, r4 = M.seat_frame(4)
+    o2, _ = M.seat_frame(2)
+    assert o2[2] > o4[2] and o4[1] < M.PY  # space 4: the lower row, the right-hand column
+    bottom = M.to_env((M.PX - M.ENC_L / 2, M.PY, M.TOP))
+    assert bottom[2] > M.TOP  # the enclosure clear of the table
+    board = M.PANEL.shapes[9]
+    assert board.color == M.PLY and board.size[2] == pytest.approx(M.BOARD_T)
+    low = M.to_env(np.array(board.centre) + np.array([-board.size[0] / 2, 0.0, 0.0]) + [M.PX, M.PY, M.TOP])
+    assert low[2] == pytest.approx(M.TOP, abs=1e-6)  # the board stands on the table
 
 
 def test_the_jaw_must_spread_to_take_the_stab():
@@ -195,6 +210,13 @@ def test_where_it_starts_is_nothing():
     assert run(st) == 0.0
 
 
+def test_success_ends_the_trial_only_after_the_second_held():
+    st = breaker_at()
+    assert TASK.success_hold_s == 1.0  # and yam_arena holds it another 1 s before ending the trial
+    assert not any(M.success(objects(st)) for _ in range(M.STILL_STEPS - 1))
+    assert M.success(objects(st)) and M.score(objects(st)) == 1.0
+
+
 # -- the demo ------------------------------------------------------------------------------------------------------
 
 PLANS = M.demo()
@@ -238,16 +260,22 @@ def test_the_demo_hooks_before_it_presses_and_lets_go_in_between():
     labels = [w.label for w in PLANS["right"]]
     assert labels.index("hook under the lip") < labels.index("let go") < labels.index("push it home")
     press = PLANS["right"][labels.index("push it home")]
-    assert press.finger == M.FINGER_CLOSED  # closed fingertips on the top, nothing held
+    assert press.finger == M.FINGER_CLOSED  # closed fingertips on the line end, nothing held
 
 
-def test_the_demo_turns_the_breaker_a_quarter_turn_line_end_to_the_bus():
+def test_the_demo_swings_the_breaker_upright_as_it_sits_in_the_panel():
     labels = [w.label for w in PLANS["right"]]
-    take = PLANS["right"][labels.index("take it")]
-    turned = PLANS["right"][labels.index("hook under the lip")]
-    assert float(take.yaw) == 0.0 and float(turned.yaw) == pytest.approx(math.pi / 2)
-    # turning +90 degrees takes the line end from +x (as it lies) to +y (at the bus)
-    assert (M._rot(math.pi / 2) @ M._rot(M.START_YAW) @ np.array([0.0, 1.0, 0.0]))[1] == pytest.approx(1.0)
+    take = PLANS["right"][labels.index("take it")].yaw.matrix
+    hooked = PLANS["right"][labels.index("hook under the lip")].yaw.matrix
+    rb0 = M._rot(M.START_YAW)  # lying on its back
+    _, rb = M.breaker_pose_tipped(M.TILT)  # held for hooking
+    for g, r in ((take, rb0), (hooked, rb)):
+        assert abs(g[:, 0] @ r[:, 0]) == pytest.approx(1.0)  # the pads close across its width
+        assert g[:, 2] @ -r[:, 2] == pytest.approx(1.0)  # the hand comes at its face
+    # the swing is a quarter turn about env y: lying on its back with its line end to +y, it ends face to the robot
+    o4, r4 = M.seat_frame(4)
+    q = r4 @ rb0.T
+    assert np.allclose(q @ [0, 1, 0], [0, 1, 0]) and np.allclose(q @ [0, 0, 1], [-1, 0, 0])
 
 
 def test_the_left_hand_stays_home():
@@ -258,3 +286,12 @@ def test_the_nohook_check_never_hooks(monkeypatch):
     monkeypatch.setenv("BK_DEMO", "nohook")
     labels = [w.label for w in M.demo()["right"]]
     assert "hook under the lip" not in labels and "onto the stab" in labels
+
+
+def test_on_the_wall_it_is_swung_onto_the_stab_before_it_is_let_go():
+    labels = [w.label for w in PLANS["right"]]
+    assert labels.index("hook under the lip") < labels.index("swing it in onto the stab") < labels.index("let go")
+    take = PLANS["right"][labels.index("take it")]
+    firm = PLANS["right"][labels.index("grip it firmly")]
+    assert take.finger == M.HOLD and firm.finger == M.HOLD_FIRM and M.HOLD_FIRM > M.HOLD  # firmer only in the air
+    assert M.SWING < 0.0 < M.TILT  # swung in past level: the soft arm drives the jaw onto the stab

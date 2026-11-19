@@ -1,8 +1,9 @@
 # Install a plug-on breaker in a load center: load end hooked on the rail, jaw pressed fully onto the bus stab
 
-A Square D Homeline 4-space load center, not wired to any supply, lies on its back on the table, its dead front
-off. Spaces 1 and 3 hold breakers; spaces 2 and 4 are empty. A new Homeline breaker stands beside it. The robot must
-install the new breaker in space 4.
+A Square D Homeline 4-space load center, not wired to any supply, is mounted upright on a plywood wall board standing
+on the table, as it is installed on a wall: its dead front off, its face towards the robot. Spaces 1 and 3 hold
+breakers; spaces 2 and 4 are empty. A new Homeline breaker lies on the table beside it. The robot must install the new
+breaker in space 4.
 
 Electricians (O*NET 47-2111) install breakers whenever a circuit is added or a breaker is replaced. A plug-on breaker
 goes in the maker's way (Square D's Homeline instruction bulletin 48840-249-01: "Insert wire terminal end of circuit
@@ -11,15 +12,16 @@ its load end hooked under the mounting rail at the panel's outer edge, then its 
 fully on the bus stab. A breaker left part way on its stab makes a poor contact that heats and arcs; one not hooked
 on the rail works loose.
 
-The task tests seating a part by force in the right order: turning the breaker so its jaw end faces the bus, hooking
-its load end under a 4.5 mm lip blind (tipped up, so the jaw clears the stab), letting it down onto the stab, then
-pressing hard enough to spread the jaw's springs over the stab, without pushing it off the rail.
+The task tests seating a part by force in the right order, on a wall in front of the robot: turning the breaker
+upright so its mounting face meets the panel and its jaw end faces the bus, hooking its load end under a 4.5 mm lip
+blind (tipped out, so the jaw clears the stab), letting it in onto the stab, then pushing hard enough to spread the
+jaw's springs over the stab, without pushing it off the rail.
 
 ## Files
 
 | File | What |
 |---|---|
-| `breaker.py` | The yam_arena task file: the load center and the breaker, `success()`, `score()` and the scripted `demo()` |
+| `breaker.py` | The yam_arena task file: the load center on its wall board and the breaker, `success()`, `score()` and the scripted `demo()` |
 | `breakerkit.py` | Our own helper: rigid bodies built from boxes, sprung slides (the jaw's shoes), per-shape friction, and hooks into yam_arena's scene and reset |
 | `test_breaker.py` | Offline checks of the parts' geometry and forces, every scoring tier, and the demo's reach and per-step limits |
 
@@ -54,21 +56,23 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
 The demo is open loop: it uses only the fixed layout, never the simulator's internal state. The right hand does it
 all; the left stays home.
 
-1. **Take the breaker** by the top of its sides, the fingers closing across its width, and lift it over the
-   enclosure's wall.
-2. **Turn it** a quarter turn so its line end points at the bus, and tip it 18 degrees line end up.
-3. **Hook it.** Lower it into space 4 with its load end 11 mm short of the rail, slide it out so its hook slot goes
-   under the rail's lip (aimed past home, so the soft arm holds it against the lip), and let go: it settles hooked,
-   its jaw resting on the stab's tapered top.
-4. **Push it home** with the closed fingertips on the top of its line end, aimed well below (the soft simulated arm
-   presses until the jaw is on), then lift off and go home.
+1. **Take the breaker** from above by its sides, the fingers closing across its width, and lift it.
+2. **Swing it upright**: the hand turns forward a quarter turn, so the breaker stands as it will sit in the panel
+   (mounting face to the wall, width upright, line end towards the bus), and grips it firmly.
+3. **Hook it.** Tipped 18 degrees line end out from the wall, bring it to space 4 with its load end 11 mm short of
+   the rail and slide it out so its hook slot goes under the rail's lip (aimed past home; the lip stops it).
+4. **Swing it in** about the hook, still held, aimed past level, until its jaw takes the stab's tapered end, and let
+   go: on a wall a breaker hooked on the rail alone would swing down about the hook, so it is held until the stab
+   holds it.
+5. **Push it home** with the closed fingertips, level, on its line end over the jaw, aimed well into the wall and a
+   little towards the rail (the soft simulated arm pushes until the jaw is fully on), then back off and go home.
 
-The demo reaches 1.0 (success) in 451 steps (22.6 s). No step of it is clamped by the run's delta-limit guard (the
+The demo reaches 1.0 (success) in 529 steps (26.5 s). No step of it is clamped by the run's delta-limit guard (the
 gripper may change by at most 5% of its range per step); `test_breaker.py` checks every step against it and that
 every pose along the arms' paths is reached.
 
-**Shortcut check.** With `BK_DEMO=nohook` the demo sets the breaker down level on the stab without hooking its load end
-under the rail and presses it on: it scores 0.
+**Shortcut check.** With `BK_DEMO=nohook` the demo offers the breaker square onto the stab without hooking its load end
+under the rail and lets go: nothing holds it up, it falls, and it scores 0.
 
 ## Scoring
 
@@ -77,19 +81,20 @@ breaker against its seated place in space 4.
 
 | Score | Condition | How to check on a real table |
 |---|---|---|
-| 1.0 | in space 4; its jaw fully on the stab and its mounting face within 1.0 mm of the interior at both ends; its load end hooked (the rail's lip at least 1 mm into its hook slot); square (within 2 degrees); no part of either gripper within 1 cm of it; the breaker still; held for 1 s | a 1 mm feeler must not pass under either end; a light lift of the load end does not free it; look |
-| 0.5 | hooked on the rail of space 4 with its jaw on the stab's full blade but an end more than 1.0 mm up; or seated with a hand still on it or not yet still | the feeler passes under the line end |
-| 0.25 | hooked on the rail of space 4, its jaw not on the stab's blade (resting on its tapered top) | look; the line end lifts freely |
-| 0 | anything else (for example the jaw pushed onto the stab with the load end not under the rail's lip, or the breaker in another space) | look; the load end lifts free |
+| 1.0 | in space 4; its jaw fully on the stab and its mounting face within 1.0 mm of the interior at both ends; its load end hooked (the rail's lip at least 1 mm into its hook slot); square (within 2 degrees); no part of either gripper within 1 cm of it; the breaker still; held for 1 s | a 1 mm feeler must not pass behind either end; a light pull on the load end does not free it; look |
+| 0.5 | hooked on the rail of space 4 with its jaw on the stab's full blade but an end standing more than 1.0 mm out; or seated with a hand still on it or not yet still | the feeler passes behind the line end |
+| 0.25 | hooked on the rail of space 4, its jaw not on the stab's blade (resting on its tapered end) | look; the line end pulls out freely |
+| 0 | anything else (for example the jaw pushed onto the stab with the load end not under the rail's lip, or the breaker in another space) | look; the load end pulls free |
 
-`score()` gives 1.0 only once the full-score state has held for 1 s (until then 0.5). Offline checks of the parts,
-every tier and the demo: `python -m pytest -q test_breaker.py` (27 tests, no simulator).
+`score()` gives 1.0 only once the full-score state has held for 1 s (until then 0.5), and `success()` returns True
+only then (yam_arena then ends the trial after its own 1 s success hold). Offline checks of the parts, every tier and the demo:
+`python -m pytest -q test_breaker.py` (29 tests, no simulator).
 
 ## Runtime and seeds
 
 Measured on an L40S with the viewer on, Isaac Sim's start-up included:
-- the demo trial (451 steps, 22.6 s of simulated time) took 1.6 minutes of wall-clock time;
-- the Dream-1 trial (the full 1,200 steps, 1 minute simulated; it scored 0.0) took 3.5 minutes.
+- the demo trial (529 steps, 26.5 s of simulated time) took 1.7 minutes of wall-clock time;
+- the Dream-1 trial (the full 1,200 steps, 1 minute simulated; it scored 0.0) took 3.2 minutes.
 
 The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
 
@@ -109,18 +114,20 @@ The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
   between the two columns' line ends, the breaker's mass (Square D lists only the boxed weight, 0.28 to 0.32 kg) and
   the frictions (0.5 plastic, 0.4 enclosure). The outside sizes are the maker's.
 - **Not modelled:** the handle (the breaker stays OFF; it is installed OFF, as the maker says); the wire connections.
-- **Geometry.** Rigid bodies built from boxes; the load center is fixed.
+- **Geometry.** Rigid bodies built from boxes; the load center and its wall board are fixed.
 
 ## Real-world build
 
-- A Square D Homeline HOM48L125GC load center (4 spaces, 125 A main lugs), not wired to any supply, lying on its back
-  with its dead front off, clamped to the table.
+- A Square D Homeline HOM48L125GC load center (4 spaces, 125 A main lugs), not wired to any supply, its dead front off,
+  screwed upright (main lugs up) to a 19 mm plywood board, 60 cm wide and 50 cm tall, which stands on the table and is
+  clamped or braced so it cannot move. The enclosure's bottom is 1 cm above the table and its back against the board,
+  whose face is at x 42 cm.
 - Two Square D HOM120 breakers seated in spaces 1 and 3; a third HOM120 (OFF) as the new breaker.
 
 Positions are in `task.json`.
 
 ## Reset between trials
 
-Remove the breaker the maker's way: lift its line end until the jaw lets go of the stab, then lift its load end off
-the rail; stand it back on its back on the table at the marked spot, line end away from the robot, handle OFF.
+Remove the breaker the maker's way: pull its line end out until the jaw lets go of the stab, then lift its load end off
+the rail; lay it back on its back on the table at the marked spot, line end to the left, handle OFF.
 Nothing is consumed.
