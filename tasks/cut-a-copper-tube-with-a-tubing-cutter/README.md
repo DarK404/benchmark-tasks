@@ -1,8 +1,8 @@
 # Cut a copper tube through with a screw-feed tubing cutter: a quarter turn a lap, never dented, offcut off
 
 A length of 1/2 in copper tube stands upright in a stand. A screw-feed tubing cutter sits on it at the cut mark,
-finger-snug (its wheel just touching), its feed knob pointing to the robot's right. The robot must cut the tube
-through with the cutter and take the offcut off.
+finger-snug (its wheel just touching), its feed knob pointing to the robot's right. The robot must cut the top 4 cm
+off the tube (it parts at the mark) with the cutter and take the offcut off.
 
 Cutting copper tube to length with a tubing cutter is daily work for plumbers, pipefitters and steamfitters (O*NET
 47-2152) and HVAC mechanics and installers (49-9021). The maker's procedure (RIDGID's tubing cutter manuals): with the
@@ -34,7 +34,7 @@ folder:
 ```bash
 inspect-robots run --embodiment yam_arena --policy dream \
   -E task=tube_cutter.py -E object_jitter=0 -E control_hz=20 -E cam_width=320 -E cam_height=176 \
-  --instruction "Cut the copper tube through with the tubing cutter, and take the offcut off." \
+  --instruction "Cut the top 4 cm off the copper tube with the tubing cutter, and take the offcut off." \
   --scorer task_score --max-steps 3000 --store-frames --log-dir ~/yam-eval/tc-dream
 ```
 
@@ -46,7 +46,7 @@ trial's videos (one MP4 per camera), run `inspect-robots video ~/yam-eval/tc-dre
 ```bash
 inspect-robots run --embodiment yam_arena --policy yam_scripted \
   -E task=tube_cutter.py -E object_jitter=0 -E control_hz=20 -E cam_width=320 -E cam_height=176 \
-  --instruction "Cut the copper tube through with the tubing cutter, and take the offcut off." \
+  --instruction "Cut the top 4 cm off the copper tube with the tubing cutter, and take the offcut off." \
   --scorer task_score --max-steps 3000 --store-frames --log-dir ~/yam-eval/tc-demo
 ```
 
@@ -60,7 +60,7 @@ The demo is open loop: it uses only the fixed layout, never the simulator's inte
    to the start.
 
 The tube parts during the third lap. Then the left hand takes the offcut by its top, lifts it off the stub
-and stands it on the table. The demo reaches 1.0 (success) in 2,231 steps (111.6 s). No step of it is clamped by
+and stands it on the table. The demo reaches 1.0 (success) in 2,250 steps (112.5 s). No step of it is clamped by
 the run's delta-limit guard (the gripper may change by at most 5% of its range per step); `test_tube_cutter.py`
 checks every step against it, that every pose along the arms' paths is reached, and that the hands keep apart.
 
@@ -81,13 +81,13 @@ Evaluated every control step; the score at the end of the episode counts (`SCORE
 | 0 | anything else | |
 
 `score()` gives 1.0 only once the full-score state has held for 1 s (until then 0.5). Offline checks of the model,
-every tier and the demo: `python -m pytest -q test_tube_cutter.py` (29 tests, no simulator).
+every tier and the demo: `python -m pytest -q test_tube_cutter.py` (32 tests, no simulator).
 
 ## Runtime and seeds
 
 Measured on an L40S with the viewer on, Isaac Sim's start-up included:
-- the demo trial (2,231 steps, 111.6 s of simulated time) took 7.3 minutes of wall-clock time;
-- the Dream-1 trial (the full 3,000 steps, 2.5 minutes simulated) took 9.1 minutes.
+- the demo trial (2,250 steps, 112.5 s of simulated time) took 6.1 minutes of wall-clock time;
+- the Dream-1 trial (the full 3,000 steps, 2.5 minutes simulated; it scored 0.0) took 8.3 minutes.
 
 The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
 

@@ -1,13 +1,13 @@
 """On the station table: a length of 1/2 in copper tube stands upright in a stand. A screw-feed tubing cutter sits
 on it at the cut mark, finger-snug (its wheel just touching the tube), its feed knob pointing to the robot's right.
 
-The robot must cut the tube through with the cutter and take the offcut off. As the maker says: turn the feed knob
+The robot must cut the top 4 cm off the tube (at the mark) with the cutter and take the offcut off. As the maker says: turn the feed knob
 a quarter turn, take the cutter right round the tube, and again, until the tube parts. Fed much more than a quarter
 turn between laps, the wheel crushes the tube out of round instead of cutting it (a dented tube end will not take a
 fitting). The cutter goes round on the tube only when pushed; the knob turns only when turned.
 
 Run it:  inspect-robots run --embodiment yam_arena -E task=tube_cutter.py -E object_jitter=0 -E control_hz=20 \\
-           --instruction "Cut the copper tube through with the tubing cutter, and take the offcut off." ...
+           --instruction "Cut the top 4 cm off the copper tube with the tubing cutter, and take the offcut off." ...
 """
 
 from __future__ import annotations
@@ -187,9 +187,11 @@ def _update(objects) -> tuple[float, bool]:
 
 
 def success(objects) -> bool:
+    """True only once the full-score state has held for STILL_STEPS control steps in a row (1 s), as score() is 1.0
+    only then; yam_arena ends the episode after success() has then held for its own SUCCESS_HOLD_S (1 s)."""
     ok = _update(objects)[1]
     _STATE["still"] = _STATE["still"] + 1 if ok else 0
-    return ok
+    return _STATE["still"] >= STILL_STEPS
 
 
 def score(objects) -> float:

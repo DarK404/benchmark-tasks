@@ -213,6 +213,21 @@ def test_full_only_after_a_second_held():
     assert held(st, 1)[0] == 1.0
 
 
+def test_success_ends_the_trial_only_after_the_second_held():
+    _cut()
+    st = states(offcut=DOWN)
+    assert TASK.success_hold_s == 1.0  # and yam_arena holds it another 1 s before ending the trial
+    assert not any(M.success(st) for _ in range(M.STILL_STEPS - 1))
+    assert M.success(st) and M.score(st) == 1.0
+
+
+def test_the_instruction_names_the_length_cut_off():
+    import json
+    task = json.loads(Path(__file__).with_name("task.json").read_text())
+    assert "top 4 cm" in task["instruction"]
+    assert M.OFFCUT_L == pytest.approx(40.0 * MM)
+
+
 def test_cut_through_with_the_offcut_still_on_is_half():
     _cut()
     assert held(states()) == (0.5, False)
