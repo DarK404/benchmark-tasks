@@ -1,8 +1,9 @@
 # Install a hot-swap drive carrier in a 1U server: slide it in to the connector, then cam it home with its handle
 
-A Dell PowerEdge R640 rack server (the 8 x 2.5 in drive chassis), unplugged, lies on the table with its front towards
-the robot. Its eight drive bays, in two rows of four, all hold drive carriers but one. A hot-swap drive carrier with a
-drive in it lies on the table beside the server, its handle open. The robot must install it in the empty bay and lock
+A Dell PowerEdge R640 rack server (the 8 x 2.5 in drive chassis), unplugged, is installed in a 2-post 19 in rack
+standing on the table, its front towards the robot, with a 1U unit directly under it and another directly over it.
+Its eight drive bays, in two rows of four, all hold drive carriers but one. A hot-swap drive carrier with a drive in
+it lies on the table in front of the rack, its handle open. The robot must install it in the empty bay and lock
 its handle.
 
 Replacing a failed drive is the commonest hands-on repair in a data center, and data centers are where the compute
@@ -12,7 +13,7 @@ carrier in place. Closing the handle is what seats the drive: its hook swings in
 carrier the last few millimetres onto the backplane's connector. A carrier only pushed in by hand stops against the
 connector, unconnected, and the handle left open does not hold it.
 
-The task tests a two-stage insertion in which the last stage is done with a lever: aligning a close-fitting carrier
+The task tests a two-stage insertion in which the last stage is done with a lever, in the cramped space a rack leaves: aligning a close-fitting carrier
 with its bay and sliding it in square until it stops, then swinging the handle shut along its arc so its cam does
 the mating, and pressing it home until its catch snaps.
 
@@ -55,16 +56,21 @@ inspect-robots run --embodiment yam_arena --policy yam_scripted \
 The demo is open loop: it uses only the fixed layout, never the simulator's internal state. The right hand does it
 all; the left stays home.
 
-1. **Take the carrier** across its sides near its middle, lift it and carry it level in line with the empty bay.
-2. **Slide it in** until the fingers are just short of the bay frame's posts, and let go (its front end tips down onto
-   the frame).
-3. **Push it in** with the closed fingertips on its front until it stops against the backplane's connector, 6 mm short
-   of home.
-4. **Close the handle**: from beside it, push it round its arc near its middle. Its hook swings in behind the frame's
+The unit over the server sits 1.6 mm above it with its front flush with the rack's posts, so a hand cannot reach down
+in front of the server's bays with its fingers upright: they would strike that unit's front. The hand works with its
+fingers tilted.
+
+1. **Take the carrier** across its sides near its middle, the hand tilted 60 degrees down (the pads on its sides),
+   lift it and carry it level in line with the empty bay.
+2. **Slide it in** until the fingertips are just short of the bay frame's posts, the tilted fingers leaning back clear
+   of the unit above, and let go (its front end tips down onto the frame).
+3. **Push it in** with the closed fingertips, tilted 45 degrees down, on its front until it stops against the
+   backplane's connector.
+4. **Close the handle**: from beside it, the fingertips still tilted, push it round its arc near its middle. Its hook swings in behind the frame's
    lip and draws the carrier home onto the connector; at the end the handle's free end lifts the catch, which drops in
    front of it. Then the hand backs off and goes home.
 
-The demo reaches 1.0 (success) in 723 steps (36.2 s). No step of it is clamped by the run's delta-limit guard
+The demo reaches 1.0 (success) in 719 steps (36.0 s). No step of it is clamped by the run's delta-limit guard
 (the gripper may change by at most 5% of its range per step); `test_drive_carrier.py` checks every step against it
 and that every pose along the arm's path is reached.
 
@@ -90,7 +96,7 @@ only then (yam_arena then ends the trial after its own 1 s success hold). Offlin
 ## Runtime and seeds
 
 Measured on an L40S with the viewer on, Isaac Sim's start-up included:
-- the demo trial (723 steps, 36.2 s of simulated time) took 2.2 minutes of wall-clock time;
+- the demo trial (719 steps, 36.0 s of simulated time) took 2.2 minutes of wall-clock time;
 - the Dream-1 trial (the full 1,200 steps, 1 minute simulated; it scored 0.0) took 3.3 minutes.
 
 The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
@@ -116,14 +122,20 @@ The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
   drawings), the carrier's 0.17 kg, the springs, and the frictions (0.15 on the bay's rails, 0.4 carrier, 0.3 handle
   and contacts). The server's outside size is Dell's.
 - **Not modelled:** the blue release button (drawn; it is not used to install); the drive's electronics.
-- **Geometry.** Rigid bodies built from boxes; the server is fixed (it lies on the table). Only its front 26 cm, the
-  drive cage and backplane, is modelled.
+- **The rack:** two posts (16 mm flanges either side of the 450 mm opening, 30 cm tall), the 1U units under and over
+  the server (43.7 mm tall, their fronts at the posts), and every unit's ears, all collision geometry.
+- **Geometry.** Rigid bodies built from boxes; the server and the rack are fixed. Only their front 26 cm is modelled
+  (the drive cage and backplane).
 
 ## Real-world build
 
-- A Dell PowerEdge R640 with the 8 x 2.5 in drive chassis (434 x 42.8 x 758 mm), unplugged and lying on the table, its
-  front frame posts at x 19 cm; its rear stands about 4 cm past the table's far edge, or use a bare R640 front drive
-  cage with its backplane.
+- A 2-post open-frame 19 in rack section (EIA-310, about 6U, 30 cm tall) standing on the table and clamped, its
+  posts' fronts at x 19 cm, centred on y 0.
+- In it, from the bottom: any 1U unit (for example a 1U network switch) in the first rack unit; a Dell PowerEdge R640
+  with the 8 x 2.5 in drive chassis (434 x 42.8 x 758 mm), unplugged, in the second; and another 1U unit (for example a
+  1U server) in the third, all with their ears on the posts. The servers' rears stand past the table's far edge, so
+  the rack section should stand at the table's edge or on a rack shelf of the same height; a bare R640 front drive
+  cage with its backplane in a 1U frame may stand in for the R640.
 - Seven Dell 2.5 in hot-swap carriers in its bays, and an eighth with a drive in it for the task (the upper row's
   second bay from the robot's right is left empty).
 

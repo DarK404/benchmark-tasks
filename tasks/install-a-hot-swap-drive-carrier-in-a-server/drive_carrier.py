@@ -49,6 +49,13 @@ carrierkit.METALLIC.update({SILVER: 0.35})
 # posts of the bay frame between the bays stand 8.3 mm proud of the chassis, their fronts (X_CAGE) at env x 0.19.
 X_CAGE = -9.3 * MM
 X_FRONT = -1.0 * MM
+# The rack: the server is installed in a 2-post 19 in rack standing on the table, in its second rack unit (44.45 mm
+# up), with a 1U unit under it and another directly over it, their fronts and the posts' ears at the cage's front.
+RACK_U = 44.45 * MM
+RACK_Z = RACK_U  # the server's underside, above the table
+UNIT_H = 43.7 * MM  # the neighbouring 1U units' height
+POST_Y0, POST_Y1 = 225.0 * MM, 241.0 * MM  # each post's flange, either side of the 450 mm opening
+POST_H = 0.30  # the rack section's height (about 6U)
 SF = 0.19 - X_CAGE
 SRV_W, SRV_H, SRV_D = 0.434, 42.8 * MM, 0.26  # the R640's width and height (Dell); the front 26 cm is modelled
 BAY_W, BAY_H, COL_W = 71.0 * MM, 18.0 * MM, 8.0 * MM
@@ -70,7 +77,7 @@ C_MASS = 0.17
 SLOT_X0, SLOT_Y, SLOT_Z = CL - 22.0 * MM, 16.0 * MM, 3.0 * MM
 MATE = 6.0 * MM
 BLADE_TIP_X = 88.0 * MM  # the blade's tip, in a seated carrier's frame
-BACKPLANE_X = CL + 1.0 * MM  # the backplane's face
+BACKPLANE_X = CL + 0.4 * MM  # the backplane's face: a carrier pressed home stops against it 0.4 mm on
 BLADE_T, BLADE_W = 2.4 * MM, 30.0 * MM
 RIDGE_DEG = 15.0
 RIDGE_L = (BLADE_T / 2) / math.tan(math.radians(RIDGE_DEG))
@@ -112,7 +119,7 @@ SLOPE_RUN = 5.0 * MM  # the nose's sloped face runs 5 mm forward as it rises 2.8
 
 def bay_origin(col: int, row: str) -> np.ndarray:
     """A seated carrier's frame origin (the middle of its front face; it rests on the bay floor) for bay (col, row)."""
-    return np.array([SF, COLS[col], TOP + ROW_Z[row] + CH / 2])
+    return np.array([SF, COLS[col], TOP + RACK_Z + ROW_Z[row] + CH / 2])
 
 
 def _plate(p0, p1, t, colour, y, w, outward) -> object:
@@ -189,7 +196,7 @@ def _server_shapes() -> list:
     # the filled bays' carriers (fixed, their handles shut) and the empty bay's connector blade
     for row in ("lower", "upper"):
         for col in range(4):
-            o = bay_origin(col, row) - np.array([SF, 0.0, TOP])
+            o = bay_origin(col, row) - np.array([SF, 0.0, TOP + RACK_Z])  # (the server body's frame)
             if (col, row) == EMPTY:
                 x0 = BLADE_TIP_X + RIDGE_L
                 out.append(box(((x0 + BACKPLANE_X) / 2, o[1], o[2]), (BACKPLANE_X - x0, BLADE_W, BLADE_T), COPPER))
@@ -206,12 +213,29 @@ def _server_shapes() -> list:
 
 
 SERVER_SHAPES = _server_shapes()
-SERVER = body("server", pos=(SF, 0.0, TOP), shapes=SERVER_SHAPES, mass=17.0, friction=float(os.environ.get("DC_SMU", "0.15")), contact_offset=0.0005,
+SERVER = body("server", pos=(SF, 0.0, TOP + RACK_Z), shapes=SERVER_SHAPES, mass=17.0, friction=float(os.environ.get("DC_SMU", "0.15")), contact_offset=0.0005,
               visual_only=tuple(i for i, s in enumerate(SERVER_SHAPES) if s.color == BLUE))
 carrierkit.kinematic(SERVER.name)  # it lies on the bench; nothing moves it
 
+
+def _rack_shapes() -> list:
+    """The rack round the server (its frame: x from the seated carrier's front, y across, z up from the table): the 1U
+    unit under it, the 1U unit over it, the two posts, and every unit's ears on the posts."""
+    xf, d = X_CAGE, 0.26
+    out = [box(((xf + d) / 2 + xf / 2, 0.0, UNIT_H / 2), (d, SRV_W, UNIT_H), STEEL),  # the unit under it
+           box(((xf + d) / 2 + xf / 2, 0.0, 2 * RACK_U + UNIT_H / 2), (d, SRV_W, UNIT_H), LID)]  # the unit over it
+    for s in (-1.0, 1.0):
+        yc = s * (POST_Y0 + POST_Y1) / 2
+        out.append(box((xf + 15 * MM, yc, POST_H / 2), (30 * MM, POST_Y1 - POST_Y0, POST_H), STEEL))  # a post
+        out.append(box((xf - 1.0 * MM, s * (SRV_W / 2 + POST_Y1) / 2, 1.5 * RACK_U),
+                       (2.0 * MM, POST_Y1 - SRV_W / 2, 3 * RACK_U - 1.0 * MM), STEEL))  # the three units' ears
+    return out
+
+
+RACK = body("rack", pos=(SF, 0.0, TOP), shapes=_rack_shapes(), friction=0.3, contact_offset=0.0005)
+
 # the carrier: on the table to the server's right, front towards the robot, its handle open
-C_START = np.array([0.30, -0.31, TOP + CH / 2])
+C_START = np.array([0.075, -0.13, TOP + CH / 2])  # on the table in front of the rack, between its posts
 CARRIER = body("carrier", pos=tuple(C_START), shapes=_carrier_shapes(), mass=C_MASS, friction=0.4,
                contact_offset=0.0005, solver_iterations=32, com=(CL / 2, 0.0, 0.0))
 
@@ -251,7 +275,7 @@ _tab_shapes = [box((-NOSE_X1 / 2, 0.0, (H_H / 2 + 0.3 * MM + TAB_Z1) / 2), (-NOS
 TAB = body("catch_tab", pos=tuple(C_START + _TAB_LOCAL), shapes=_tab_shapes, mass=TAB_MASS, friction=0.3,
            contact_offset=0.0005, solver_iterations=32)
 
-OBJECTS = [SERVER, CARRIER, SHOE_A, SHOE_B, HANDLE, TAB]
+OBJECTS = [SERVER, RACK, CARRIER, SHOE_A, SHOE_B, HANDLE, TAB]
 carrierkit.register(*OBJECTS)
 _spre = SHOE_PRELOAD / SHOE_K
 carrierkit.add_spring(Spring(CARRIER.name, SHOE_A.name, axis="Z", stiffness=SHOE_K, damping=2.0, target=-_spre,
@@ -372,11 +396,11 @@ GRIP_DZ = float(os.environ.get("DC_GRIPZ", "-2")) * MM  # the pad tips this far 
 OPEN_W = -(CW / 2 + 10.0 * MM)
 HOLD = -(CW / 2 - 4.0 * MM)
 CARRY_Z = TOP + 0.09
-CAL = np.array([float(v) for v in os.environ.get("DC_CAL", "0.6,3.2,2.7").split(",")]) * MM
+CAL = np.array([float(v) for v in os.environ.get("DC_CAL", "0.6,2.6,1.7").split(",")]) * MM
 LIFT = 1.2 * MM  # carried this far above the bay floor
-YAW_FIX = math.radians(float(os.environ.get("DC_YAW", "-1.1")))  # the hand turned so the carrier, which turns
+YAW_FIX = math.radians(float(os.environ.get("DC_YAW", "0")))  # the hand turned so the carrier, which turns
 # about 1 degree in the grip as it is lifted, goes into the bay square
-RELEASE_X = -20.0 * MM  # the TCP's x (bay frame) when it lets go: its fingers short of the frame posts
+RELEASE_X = float(os.environ.get("DC_REL", "-16")) * MM  # the pad tips' x (bay frame) when it lets go: short of the frame posts
 FINGER_R = float(os.environ.get("DC_FR", "8")) * MM  # the closed fingers' face, ahead of the TCP
 PUSH_PAST = float(os.environ.get("DC_PAST", "18")) * MM  # the push aims this far past the connector's touch point
 PUSH_Y = 5.0 * MM  # across the carrier's front, clear of the open handle and the catch
@@ -384,6 +408,9 @@ PUSH_DZ = -4.0 * MM  # the fingertips this far below its mid-height
 SWEEP_R = 40.0 * MM  # the handle is pushed this far out from its pin
 HANDLE_DZ = -5.0 * MM  # ... with the fingertips this far below its mid-height (it is 10 mm tall)
 PRESS = float(os.environ.get("DC_PRESS", "15")) * MM  # ... and the targets lie this far into it (the soft arm)
+PUSH_PITCH = math.radians(float(os.environ.get("DC_PITCH", "45")))  # the pushing fingertips tilted this far down:
+# straight down, the fingers would strike the front of the unit over the server before the carrier is in
+FR_T = float(os.environ.get("DC_FRT", "6")) * MM  # the tilted fingers' leading face, ahead of the fingertip point
 DEMO = os.environ.get("DC_DEMO", "")  # "push": push it home by hand and leave the handle open (the shortcut check)
 
 
@@ -407,31 +434,55 @@ def cam_shift(deg: float) -> float:
     return float(np.clip(pin_x - PIVOT[0], -MATE, 0.0))
 
 
+CARRY_PITCH = math.radians(float(os.environ.get("DC_CPITCH", "60")))  # the carrying hand tilted this far down: the
+# pads still on the carrier's sides, the fingers leaning back clear of the unit over the server as it goes in
+GRIP_C = carrierkit.tilted(0.0, CARRY_PITCH)
+
+
+def _carry_tcp(point) -> tuple[float, float, float]:
+    """The TCP with the tilted pads' tips at ``point`` (env)."""
+    a = np.array([math.cos(CARRY_PITCH), 0.0, -math.sin(CARRY_PITCH)])
+    return tuple(float(v) for v in np.asarray(point, float) - TIP * a)
+
+
 def take_and_insert() -> list:
     s = C_START
-    at = (s[0] + GRIP_X, s[1], s[2] + GRIP_DZ + TIP)
-    lined = _bay((X_CAGE - 10 * MM - CL + GRIP_X, 0.0, LIFT + GRIP_DZ + TIP))
-    inside = _bay((RELEASE_X, 0.0, LIFT + GRIP_DZ + TIP))
-    return [Waypoint(2.0, (at[0], at[1], at[2] + 0.05), OPEN_W, "over the carrier", 0.0),
-            Waypoint(1.2, at, OPEN_W, "round its sides", 0.0),
-            Waypoint(1.0, at, HOLD, "take it", 0.0),
-            Waypoint(1.2, (at[0], at[1], CARRY_Z), HOLD, "lift it", 0.0),
-            Waypoint(3.5, (lined[0], lined[1], CARRY_Z), HOLD, "over in front of the bay", YAW_FIX),
-            Waypoint(1.5, lined, HOLD, "in line with the bay", YAW_FIX),
-            Waypoint(1.0, lined, HOLD, "settle", YAW_FIX),
-            Waypoint(2.0, inside, HOLD, "slide it in", YAW_FIX),
-            Waypoint(1.0, inside, OPEN_W, "let go", YAW_FIX),
-            Waypoint(1.0, (inside[0] - 0.02, inside[1], inside[2] + 0.03), OPEN_W, "back off", YAW_FIX)]
+    at = _carry_tcp((s[0] + GRIP_X, s[1], s[2] + GRIP_DZ))
+    o = bay_origin(*EMPTY) + CAL
+    lined = _carry_tcp(o + np.array([X_CAGE - 10 * MM - CL + GRIP_X, 0.0, LIFT + GRIP_DZ]))
+    inside = _carry_tcp(o + np.array([RELEASE_X, 0.0, LIFT + GRIP_DZ]))
+    up = np.array([0.0, 0.0, 0.05])
+    return [Waypoint(2.0, tuple(np.asarray(at) + up), OPEN_W, "over the carrier", GRIP_C),
+            Waypoint(1.2, at, OPEN_W, "round its sides", GRIP_C),
+            Waypoint(1.0, at, HOLD, "take it", GRIP_C),
+            Waypoint(1.2, (at[0], at[1], CARRY_Z), HOLD, "lift it", GRIP_C),
+            Waypoint(3.5, (lined[0], lined[1], CARRY_Z), HOLD, "over in front of the bay", GRIP_C),
+            Waypoint(1.5, lined, HOLD, "in line with the bay", GRIP_C),
+            Waypoint(1.0, lined, HOLD, "settle", GRIP_C),
+            Waypoint(2.0, inside, HOLD, "slide it in", GRIP_C),
+            Waypoint(1.0, inside, OPEN_W, "let go", GRIP_C),
+            Waypoint(1.0, tuple(np.asarray(inside) + np.array([-0.03, 0.0, 0.03])), OPEN_W, "back off", GRIP_C)]
+
+
+GRIP_T = carrierkit.tilted(0.0, PUSH_PITCH)  # fingertips pointing in at the rack, tilted down, closed side by side
+
+
+def _tilted_tcp(point, push_dir) -> tuple[float, float, float]:
+    """The TCP for the tilted closed fingertips pressing at ``point`` (the bay's frame) in direction ``push_dir``."""
+    a = np.array([math.cos(PUSH_PITCH), 0.0, -math.sin(PUSH_PITCH)])  # the approach (the fingers' direction)
+    p = np.asarray(point, float) - FR_T * np.asarray(push_dir, float) - TIP * a
+    return _bay(p)
 
 
 def push_in() -> list:
     face = -(GRIP_X - RELEASE_X)  # where it was let go (its front's x)
     goal = -MATE + PUSH_PAST if DEMO != "push" else 0.20
-    z = TIP + PUSH_DZ  # (let go, its front end has tipped down onto the frame; it levels as it goes in)
-    return [Waypoint(2.0, _bay((face - FINGER_R - 0.03, PUSH_Y, 0.03)), FINGER_CLOSED, "in front of it", 0.0),
-            Waypoint(1.0, _bay((face - FINGER_R - 0.01, PUSH_Y, z)), FINGER_CLOSED, "down to its front", 0.0),
-            Waypoint(2.0, _bay((goal - FINGER_R, PUSH_Y, z)), FINGER_CLOSED, "push it in", 0.0),
-            Waypoint(0.8, _bay((-MATE - FINGER_R - 0.03, PUSH_Y, z)), FINGER_CLOSED, "back off", 0.0)]
+    z = PUSH_DZ  # (let go, its front end has tipped down onto the frame; it levels as it goes in)
+    fwd = (1.0, 0.0, 0.0)
+    return [Waypoint(2.0, _tilted_tcp((face - 0.03, PUSH_Y, 0.03), fwd), FINGER_CLOSED, "in front of it", GRIP_T),
+            Waypoint(1.0, _tilted_tcp((face - 0.01, PUSH_Y, z), fwd), FINGER_CLOSED, "down to its front", GRIP_T),
+            Waypoint(2.0, _tilted_tcp((goal, PUSH_Y, z), fwd), FINGER_CLOSED, "push it in", GRIP_T),
+            Waypoint(0.8, _tilted_tcp((-MATE - 0.03, PUSH_Y, z), fwd), FINGER_CLOSED, "back off", GRIP_T)]
 
 
 def _on_handle(deg: float, press: float) -> tuple[float, float, float]:
@@ -440,20 +491,20 @@ def _on_handle(deg: float, press: float) -> tuple[float, float, float]:
     pin = PIVOT + np.array([cam_shift(deg), 0.0, 0.0])
     along = np.array([-math.sin(a), math.cos(a), 0.0])
     push = np.array([math.cos(a), math.sin(a), 0.0])  # the direction its pushed point moves as it shuts
-    p = pin + SWEEP_R * along - (H_T / 2 + FINGER_R - press) * push
-    return _bay((p[0], p[1], TIP + HANDLE_DZ))
+    p = pin + SWEEP_R * along - (H_T / 2 - press) * push
+    return _tilted_tcp((p[0], p[1], HANDLE_DZ), push)
 
 
 def close_handle() -> list:
     start = np.asarray(_on_handle(OPEN_DEG, -6 * MM))
-    out = [Waypoint(1.5, (start[0], start[1], start[2] + 0.03), FINGER_CLOSED, "beside the handle", 0.0),
-           Waypoint(1.0, tuple(start), FINGER_CLOSED, "down beside it", 0.0)]
+    out = [Waypoint(1.5, (start[0], start[1], start[2] + 0.03), FINGER_CLOSED, "beside the handle", GRIP_T),
+           Waypoint(1.0, tuple(start), FINGER_CLOSED, "down beside it", GRIP_T)]
     for deg in (80.0, 65.0, 50.0, 35.0, 20.0, 8.0, 0.0, -4.0):
         out.append(Waypoint(1.0, _on_handle(deg, PRESS), FINGER_CLOSED,
-                            "press it shut" if deg <= 0 else "close the handle", 0.0))
+                            "press it shut" if deg <= 0 else "close the handle", GRIP_T))
     end = np.asarray(_on_handle(0.0, -10 * MM))
-    out += [Waypoint(1.0, tuple(end), FINGER_CLOSED, "off it", 0.0),
-            Waypoint(1.0, (end[0], end[1], end[2] + 0.04), FINGER_CLOSED, "up", 0.0),
+    out += [Waypoint(1.0, tuple(end), FINGER_CLOSED, "off it", GRIP_T),
+            Waypoint(1.0, (end[0] - 0.03, end[1], end[2] + 0.03), FINGER_CLOSED, "up", GRIP_T),
             Waypoint(2.0, RHOME, FINGER_OPEN, "home", 0.0)]
     return out
 

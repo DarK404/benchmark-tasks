@@ -99,7 +99,7 @@ def test_the_blade_tip_is_thinner_than_the_shoes_gap_and_touches_them_6_mm_befor
 
 
 # the cam: the hook against the bay frame, in the bay's mid-height plane
-_O = M.bay_origin(*M.EMPTY) - np.array([M.SF, 0.0, M.TOP])
+_O = M.bay_origin(*M.EMPTY) - np.array([M.SF, 0.0, M.TOP + M.RACK_Z])
 _OBS = []
 for _s in M.SERVER_SHAPES:
     _c, _h = np.array(_s.centre), np.array(_s.size) / 2
