@@ -20,6 +20,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import crackerkit  # noqa: E402
 from crackerkit import Glue, body, box  # noqa: E402
+from yam_arena import station  # noqa: E402
 from yam_arena.analysis import box_signed_distance  # noqa: E402
 from yam_arena.constants import FINGER_CLOSED, FINGER_OPEN  # noqa: E402
 from yam_arena.demo import Waypoint  # noqa: E402
@@ -125,8 +126,16 @@ def cracked(objects) -> bool:
     return any(crimp_gap(objects, s) > TORN for s in ENDS)
 
 
+TABLE_X = (station.TABLE_CENTER[0] - station.TABLE_SIZE[0] / 2, station.TABLE_CENTER[0] + station.TABLE_SIZE[0] / 2)
+TABLE_Y = (station.TABLE_CENTER[1] - station.TABLE_SIZE[1] / 2, station.TABLE_CENTER[1] + station.TABLE_SIZE[1] / 2)
+
+
 def _down(st) -> bool:
-    return bool(np.asarray(st.pos)[2] < TOP + TUBE_R + 15 * MM)
+    """Lying on the tabletop: its middle over the table (inside its edges) and at the height of a tube resting on it
+    (from 14 mm lower, an end lying on its narrower crimp, to 15 mm higher); not held up, not off or below the table."""
+    x, y, z = np.asarray(st.pos)
+    on_table = TABLE_X[0] < x < TABLE_X[1] and TABLE_Y[0] < y < TABLE_Y[1]
+    return bool(on_table and TOP + TUBE_R - 14.0 * MM < z < TOP + TUBE_R + 15.0 * MM)
 
 
 def held_up(objects) -> bool:

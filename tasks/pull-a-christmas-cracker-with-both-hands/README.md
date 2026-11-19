@@ -1,6 +1,6 @@
 # Pull a Christmas cracker with both hands until it cracks and parts, then put the pieces down
 
-A Christmas cracker (a standard 12 in cracker) lies across the table in front of the robot. The robot must pull it,
+A Christmas cracker (a Tom Smith Traditional 12 in cracker) lies across the table in front of the robot. The robot must pull it,
 one end in each hand, until it cracks and comes apart, then put the pieces down on the table.
 
 Pulling crackers is part of Christmas dinner in Britain and much of the Commonwealth: about 150 million are pulled in
@@ -69,14 +69,14 @@ Evaluated every control step; the score at the end of the episode counts (`SCORE
 
 | Score | Condition | How to check on a real table |
 |---|---|---|
-| 1.0 | cracked (an end torn off the middle at its crimp, the crimp more than 10 mm apart); every piece down on the table; no part of either gripper within 2 cm of any piece; all still; held for 1 s | look: two pieces on the table, a torn crimp |
+| 1.0 | cracked (an end torn off the middle at its crimp, the crimp more than 10 mm apart); every piece lying on the tabletop, inside its edges (not held up, not off the table or on the floor); no part of either gripper within 2 cm of any piece; all still; held for 1 s | look: two pieces on the table, a torn crimp |
 | 0.5 | cracked, the pieces not yet down and let go (or still moving) | look |
 | 0.25 | held up off the table by both ends (both more than 3 cm up), not cracked | look |
 | 0 | anything else (for example still whole on the table, or dragged whole by one hand) | look |
 
 `score()` gives 1.0 only once the full-score state has held for 1 s (until then 0.5), and `success()` returns True
 only then (yam_arena then ends the trial after its own 1 s success hold). Offline checks of the parts, every tier and
-the demo: `python -m pytest -q test_christmas_cracker.py` (15 tests, no simulator).
+the demo: `python -m pytest -q test_christmas_cracker.py` (17 tests, no simulator).
 
 ## Runtime and seeds
 
@@ -95,15 +95,17 @@ The layout is fixed (`-E object_jitter=0`); there are no seeds to choose.
   boxed toy, lies loose in the middle.
 - **Our estimates:** the tearing forces (no maker or study publishes a cracker's pull-apart force; 18-20 N is a firm
   two-handed tug, the snap strip's friction included), the masses (40 g in all, about what a 12 in cracker weighs),
-  and the frictions (0.7 paper, 0.5 the gift). The sizes are those of a standard 12 in cracker: 30 cm long, 5 cm
-  across, crimped to about 2.4 cm.
+  and the frictions (0.7 paper, 0.5 the gift). The length is the product's (12 in, 30 cm); its 5 cm
+  diameter and 2.4 cm crimps are our estimates. A real trial can check the tearing force by pulling
+  one cracker from the same box apart with a luggage scale.
 - **Not modelled:** the paper's give (the tubes are rigid, so it cannot be crushed); the snap's bang; the paper hat.
 - **Geometry.** Rigid bodies built from boxes (12-sided prisms for the tubes).
 
 ## Real-world build
 
-- A standard 12 in (30 cm) Christmas cracker, lying across the table at the marked spot. A new cracker each trial
-  (crackers are consumed: about £1 each).
+- One cracker from a box of Tom Smith Traditional 12 in Christmas crackers (FSC, plastic-free; all trials from one
+  product, ideally one batch), lying across the table at the marked spot. A new cracker each trial (crackers are
+  consumed: about £1 each).
 
 Positions are in `task.json`.
 

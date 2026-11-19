@@ -159,3 +159,23 @@ def test_the_demo_fits_the_run_limit_and_both_hands_pull_together():
 def test_the_onehand_check_leaves_the_left_hand_home(monkeypatch):
     monkeypatch.setenv("XC_DEMO", "onehand")
     assert {tuple(w.pos) for w in M.demo()["left"]} == {M.LHOME}
+
+
+def _moved(objs, name, dp):
+    st = objs[name]
+    objs[name] = ck.body_state([s for s in M.OBJECTS if s.name == name][0], np.asarray(st.pos) + dp, st.quat_xyzw,
+                               ZERO, ZERO)
+    return objs
+
+
+def test_a_piece_off_the_tables_edge_or_below_it_is_not_down():
+    beyond = M.TABLE_Y[1] + 0.05 - np.asarray(M.ENDS["left"].pos)[1]
+    assert run(_moved(objects(dy_left=0.06), M.ENDS["left"].name, [0.0, beyond, 0.0])) == 0.5
+    M._reset_state()
+    assert run(_moved(objects(dy_left=0.06), M.ENDS["left"].name, [0.0, 0.0, -0.30])) == 0.5  # on the floor
+    M._reset_state()
+    assert run(_moved(objects(dy_left=0.06), M.MIDDLE.name, [0.0, 0.0, -0.30])) == 0.5
+
+
+def test_a_piece_lying_on_its_crimp_still_counts_as_down():
+    assert run(_moved(objects(dy_left=0.06), M.ENDS["left"].name, [0.0, 0.0, -(M.TUBE_R - M.NECK_R)])) == 1.0
