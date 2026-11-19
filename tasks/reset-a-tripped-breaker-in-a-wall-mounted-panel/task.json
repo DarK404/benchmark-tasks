@@ -1,0 +1,22 @@
+{
+  "title": "Reset a tripped breaker: push its mid-way handle firmly all the way to OFF, then to ON, leaving the other breakers on",
+  "category": "Societal relatability",
+  "keywords": [
+    "household",
+    "electrical panel",
+    "circuit breaker",
+    "reset",
+    "toggle",
+    "latch mechanism",
+    "wall-mounted"
+  ],
+  "instruction": "One breaker in this unpowered training panel has tripped. Reset it.",
+  "context": "Resetting a tripped breaker is one of the commonest jobs in a home: a heater, kettle and toaster on one circuit, and the lights go out until someone opens the panel door and resets the breaker. Square D's directions: a tripped breaker's handle sits about midway between ON and OFF; to reset it, push the handle all the way to OFF, then all the way back to ON. Pushed straight towards ON from the middle it does not stay on, and a stiff one must be pressed firmly until it touches OFF. The other breakers must be left on.",
+  "setup": "Positions in cm from the midpoint between the two arm bases, on the table (x forward, y left); the layout is the same in every trial. Fixed: a 19 mm plywood wall board (60 cm wide, 50 cm tall) standing upright on the table, its face at x 42, centred on y -6. Screwed to it as on a wall: a Square D Homeline HOM48L125GC 4-space load center, an unpowered training panel not wired to any supply (painted steel enclosure 37.6 cm tall, 22.6 cm wide, 9.7 cm deep), its back against the board, its bottom 1 cm above the table, centred on y -6, main lugs up, its door open and its dead front (steel cover) on, its face at about x 32. Four Square D HOM120 breakers (black, 2.54 cm wide) in its spaces, two columns of two: their handles (black, 8 mm wide, standing 16.5 mm out of the dead front's slots, throwing 25 degrees either way) are 18.5 cm (lower row) and 21 cm (upper row) above the table, the right-hand column's at y -10.5 and the left-hand column's at y -1.5. ON is towards the middle of the panel. The breakers in spaces 1, 2 and 3 are ON; the one in space 4 (the right-hand column, lower row) has tripped: its handle stands midway. Nothing else is on the table.",
+  "scoring": "Checked at the end. 1.0: the tripped breaker reset (relatched) and ON (its handle within 7 degrees of the ON stop), every other breaker still ON and never switched off, no part of either gripper within 1 cm of any handle, every handle still, for 1 s. 0.5: relatched but its handle left at OFF. 0: anything else (for example pushed only towards ON, so it springs back to the middle); and 0 for the rest of the run once any other breaker has been switched off (its handle thrown past the middle).",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "Trip the breaker in space 4 again with a breaker trip tester, so its handle stands midway; check the other three are ON. Nothing is consumed.",
+  "fidelity": "Contact and springs, no rules: each handle is hinged (25 degrees either way) with a sprung toggle plunger under its arm (7 N at mid) that throws it to ON or OFF. In the tripped breaker a sprung cradle (5 N) presses a notch on a pin at the arm's tip, centring the handle; a push all the way to OFF lifts the cradle 3 mm, where a sprung pawl catches it (relatched); a push to ON only springs back. Inner shapes and springs are our estimates. Boxes.",
+  "scores": "Dream-1 run: 0.0 (both hands come up to the panel and the left hovers by the handles, but neither pushes one); demo: 1.0 (success at step 322)",
+  "media": "M-2MPGRH"
+}
