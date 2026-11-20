@@ -1,0 +1,22 @@
+{
+  "title": "Take the battery pack off a cordless drill: hold the drill, push in both release buttons and slide the pack off",
+  "category": "Societal relatability",
+  "keywords": [
+    "household",
+    "power tool",
+    "cordless drill",
+    "battery pack",
+    "bimanual",
+    "release buttons",
+    "latch"
+  ],
+  "instruction": "Take the battery pack off the drill.",
+  "context": "Taking the battery off a cordless drill to charge it, or to swap in a charged one, is something most people who own a drill do every time they use it; tens of millions of households have one. Slide-on packs are held by a latch that lets go only while the release buttons on both sides are pushed in, so one hand holds the drill while the other squeezes both buttons and slides the pack off along the drill's foot. Neither hand alone can do it.",
+  "setup": "Positions in cm from the midpoint between the two arm bases (x forward, y left); the layout is the same in every trial. A Milwaukee 3601-20 M18 compact brushless drill/driver (bare tool: 14.5 cm long, 5.6 cm wide, 1.04 kg, red and black) with a Milwaukee 48-11-1820 M18 CP2.0 battery pack on it (11.8 x 7.9 x 5.5 cm, 0.43 kg, black with a red top) lies loose on its left side on the bare table, as left on a bench: the pack's base faces the robot, its near face at x 18 and its middle at y 3; the grip runs along x with the motor housing away from the robot; the chuck, and the way the pack slides off, point to the robot's right (-y). The pack is wider than the drill's body, so the drill leans 4.5 deg down onto its housing. One release button faces the table, the other up. Nothing else is on the table.",
+  "scoring": "Checked at the end. On the drill: the pack still on the foot's rails (slid under 7.5 cm along them). Down: lying on the tabletop (lowest point within 3 mm of it), any way up. 1.0 (held 1 s): the pack off the drill and down, the drill down within 15 cm of where it lay, no gripper within 2 cm of either, both still (under 1 cm/s). 0.5: the pack off the drill, anything else (still held or in the air, moving, the drill held up or carried more than 15 cm). 0.25: the pack slid 1 cm or more along the rails but still on the drill. 0: anything else (for example both lifted together with the pack still on); and 0 from then on if the pack or the drill ever falls off the table.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Slide the pack back onto the drill until it clicks, and lay the drill on its left side at the marks. Use a spent pack, or one with its cells taken out and the case screwed shut, so no trial handles live cells. Nothing is consumed.",
+  "fidelity": "All contacts and forces, no rules: the foot's rails hook under the pack's tongue; each release button is a sprung slide (6 N at rest, 10.5 N fully in, 3 mm travel) whose pawl meets a stop on the foot until pushed in 1.5 mm; a sprung terminal shoe (6 N) makes about 6 N of sliding drag. Spring forces and drag are our estimates; sizes and masses are Milwaukee's. Boxes; one chuck cylinder.",
+  "scores": "Dream-1 run: 0.0 (both hands go to the drill and the pack and push them about; neither presses the release buttons); demo: 1.0 (success at step 646)",
+  "media": "M-52NSQW"
+}
