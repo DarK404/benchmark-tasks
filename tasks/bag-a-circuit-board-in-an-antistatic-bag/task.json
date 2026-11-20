@@ -1,0 +1,23 @@
+{
+  "title": "Open a flat static-shielding bag, slide a circuit board into it and put the filled bag in a tote",
+  "category": "Impact on jobs",
+  "keywords": [
+    "electronics",
+    "ESD",
+    "static shielding bag",
+    "circuit board",
+    "packing",
+    "bimanual",
+    "deformable",
+    "bag opening"
+  ],
+  "instruction": "Put the circuit board into the antistatic bag, then put the bag in the tote.",
+  "context": "Under ESD control programs (ANSI/ESD S20.20), every static-sensitive board that leaves the protected bench is packed in a static-shielding bag; electronics assemblers, repair technicians and returns packers bag boards many times a shift. A new bag lies flat with its mouth shut: it must be opened, held open while the board goes in, and the filled bag put in the tote. Done by: electronics assemblers, computer and electronics repair technicians, shipping and returns packers.",
+  "setup": "Positions in cm from the midpoint between the two arm bases (x forward, y left), on the table; the layout is the same in every trial. Fixed: a blue-grey dissipative rubber bench mat, 30 x 36 x 0.3 cm, centred at x 27, y -4. Loose on the mat: an empty SCS 10035 static-shielding bag (Metal-In, open top, 3 x 5 in: 7.6 x 12.7 cm, 5 mm side and bottom seams, silver-grey film (drawn opaque)), lying flat and shut, its length along x, centred at x 30, y 0, its mouth at x 23.6 facing the robot; a Raspberry Pi Zero 2 W board (65 x 30 mm, 5.3 mm high with its parts, 10 g, no headers), components up, its length along x, centred at x 20, y -14. Fixed on the table on the robot's left: an empty black Quantum DG91035-CON conductive tote (27.6 x 21 x 8.9 cm outside, 23.3 x 16.7 cm inside, 7.6 cm deep, no dividers), long side along x, centred at x 31, y 28.",
+  "scoring": "Checked at the end; the board's place is measured in the bag's own frame, wherever the bag lies. 1.0 (held 1 s): the board wholly in the bag, between its two films, inside the side seams, its trailing edge at least 5 mm past the mouth; AND the whole bag inside the tote (between its inner walls, below its rim) lying on its floor (bottom film within 3 mm of it, tilted under 10 deg); no gripper within 2 cm of the bag or board; bag and board still (under 1 cm/s). 0.5: board wholly in as above, the bag anywhere else (on the mat, held, over a wall, above the floor, moving). 0.25: the board's centre between the films and past the mouth (at least half of it in). 0: anything else (board on, under or beside the bag), and 0 from then on if the board or bag ever falls off the table.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Take the board out, flatten the bag on the mat at its marks (a bag that has creased or lost its shape is replaced: about $0.10), lay the board at its marks and empty the tote. Nothing is consumed.",
+  "fidelity": "All contacts and forces, no rules. The bag is a closed loop of five film strips hinged along its length (a weak bending spring each): squeezing its side seams stands its edges up and arches the top film open, as with a real bag. Strips are 2 mm thick and stiff along the length; the bag weighs 6 g (real 1.5 g). Board, mat and tote are boxes; frictions are our estimates (film 0.4).",
+  "scores": "Dream-1 run: 0.0 (the right hand hovers over the bag and the board and never grips either; the left stays near home); demo: 1.0 (success at step 773)",
+  "media": "M-QTMQFS"
+}
